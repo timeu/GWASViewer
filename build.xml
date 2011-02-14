@@ -92,9 +92,14 @@
   </target>
 		
   <target name="release" depends="jar.manifest.release,javac" description="Build the jar for a release">
-    <jar jarfile="gwasgeneviewer.jar" manifest="${manifest.file}">
+    <jar jarfile="gwasgeneviewer-noredist.jar" manifest="${manifest.file}">
       <path refid="jar.files" />
     </jar>
+  	<jar jarfile="gwasgeneviewer.jar" manifest="${manifest.file}">
+  	      <path refid="jar.files" />
+  		  <zipfileset src="${lib.folder}/dygraph-gwt.jar" excludes="META-INF/*" />
+  		  <zipfileset src="${lib.folder}/geneviewer.jar" excludes="META-INF/*" />
+  	</jar>
   </target>
 
 	
