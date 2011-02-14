@@ -1,0 +1,20 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+	xmlns:g="urn:import:com.google.gwt.user.client.ui"
+	xmlns:dyg="urn:import:org.danvk.dygraphs.client"
+	xmlns:gview="urn:import:at.gmi.nordborglab.widgets.geneviewer.client">
+	<ui:style>
+		.genomeView {
+      margin: 0px 5px 0px 26px; 
+    }
+	</ui:style>
+	<g:FlowPanel height="100%" >
+		<g:HTMLPanel>
+			<g:Label horizontalAlignment="ALIGN_LEFT" ui:field="chromosome_label"/>
+		</g:HTMLPanel>
+		<dyg:Dygraphs ui:field="scatterChart"></dyg:Dygraphs>
+		<g:HTMLPanel ui:field="genomeViewContainer" visible="false">
+	  	   <gview:GeneViewer ui:field="genomeView" addStyleNames='{style.genomeView}'></gview:GeneViewer>
+	  	</g:HTMLPanel>
+	</g:FlowPanel>
+</ui:UiBinder> 
