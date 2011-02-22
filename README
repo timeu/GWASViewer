@@ -1,0 +1,66 @@
+  G W A S G E N E V I E W E R  - 0.2.0
+  a GWT composite for combined visualization GWAS plots and gene models.  
+
+  //////////////////////////////////////////////////////////////////////////////
+
+  License           MIT (see included LICENSE)
+  Original Author   Ümit Seren
+  
+
+  Web Site          -  
+  Github Repo.      https://github.com/timeu/GWASGeneViewer
+  Bug Tracking      -
+  Test Suite        -
+
+  
+  //////////////////////////////////////////////////////////////////////////////
+  
+  ACKNOWLEDGMENT & THIRD PARTY LIBRARIES  
+    
+    - processing.js  by John Resig (http://processingjs.org)
+    - Google Web Toolkit (GWT) by Google (http://code.google.com/webtoolkit/)
+    - jbrowse by GMOD (http://jbrowse.org)
+    - dygraphs by Dan Vanderkam (http://dygraphs.com/)
+  
+  //////////////////////////////////////////////////////////////////////////////
+  
+  INTRODUCTION 
+  
+  GWASGeneViewer is a simple Google Web Toolkit (GWT) widget for a combined 
+  visualization of Genome Wide Association Mapping (GWAS) plots and gene models.
+  
+  The widget uses the a modified version of dygraphs's GWT widget and the GeneViewer 
+  widget (see required 3rd party libraries). 
+  The required GeneViewer widget uses processing.js to visualize the gene models
+  and a modified version of dygraphs is used to visualize the GWAS plots as 
+  scatterplots.  
+  
+  The widget combines these two visualization tools (GeneViewer and Dygraph) 
+  so that the genes are aligned with the GWAS plots and wire interactions in either
+  of these widgets together.
+  
+  This means if the user zooms into a region in the GWAS plot the gene model view 
+  will also be zoomed into the same region. This is only one example of interactions
+  which are supported by this widget (see USAGE for more examples).
+  
+   
+
+  //////////////////////////////////////////////////////////////////////////////
+  
+  PLATFORM AND BROWSER COMPATIBILITY
+  
+  The GeneViewer widget uses processing.js to visualize the gene models.
+  The Dygraph widget uses dygraphs.js to visualize the GWAS plots. 
+  Both widgets rely on the HTML5 canvas element. For browser compatiblity refer to 
+  the documentation of both libraries.    
+       
+  In general this widget works with browser that support the HTML5 canvas element. 
+  In case of Microsoft's IE this only applies to the Internet Explorer 9.0
+  
+  //////////////////////////////////////////////////////////////////////////////
+
+  USAGE
+  
+  to be written
+  
+  //////////////////////////////////////////////////////////////////////////////
