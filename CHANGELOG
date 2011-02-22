@@ -1,0 +1,11 @@
+February 22, 2011 - Release 0.2.0
+    
+    * GWASGeneViewer (bugfix): variables renamed from GenomeView to GeneViewer
+    * GWASGeneViewer (added): new functions addClickGeneHandler and addSelectionHandler added
+    * GWASGeneViewer (added): new function addDisplayGene and clearDisplayGene added 
+                          to allow highlighting of genes in the dygraph chart
+    * GeneViewer (added): GeneViewer library version 0.2 used
+
+February 14, 2011 - Release 0.1.0
+
+    * Initial version
