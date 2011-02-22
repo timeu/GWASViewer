@@ -13,8 +13,8 @@
 			<g:Label horizontalAlignment="ALIGN_LEFT" ui:field="chromosome_label"/>
 		</g:HTMLPanel>
 		<dyg:Dygraphs ui:field="scatterChart"></dyg:Dygraphs>
-		<g:HTMLPanel ui:field="genomeViewContainer" visible="false">
-	  	   <gview:GeneViewer ui:field="genomeView" addStyleNames='{style.genomeView}'></gview:GeneViewer>
+		<g:HTMLPanel ui:field="geneViewerContainer" visible="false">
+	  	   <gview:GeneViewer ui:field="geneViewer" addStyleNames='{style.genomeView}'></gview:GeneViewer>
 	  	</g:HTMLPanel>
 	</g:FlowPanel>
 </ui:UiBinder> 
