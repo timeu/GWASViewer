@@ -2,7 +2,7 @@
 <!-- Build file based on gwtp's build file (http://code.google.com/p/gwt-platform/) -->
 
 <project name="GWASGeneViewer" default="build" basedir=".">
-  <property name="version.num" value="0.1"/>
+  <property name="version.num" value="0.2"/>
   <property environment="env"/>
   <property name="in.src.folder" location="src" />
   <property name="in.test.folder" location="test" />
@@ -34,6 +34,10 @@
     <fileset dir="${in.src.folder}" includes="**/*.xml"  />
 	<fileset dir="${in.src.folder}" includes="**/*.js"  />
     <fileset dir="." includes="META-INF/**" />
+	<fileset dir=".">
+	   <include name="LICENSE" />
+	   <include name="README" />
+	</fileset>
 	</path>
 
     	
