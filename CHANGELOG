@@ -1,3 +1,6 @@
+February 23, 2011 - Release 0.2.1
+    * GeneViewer (replaced): Replaced with version 0.2.1 
+
 February 22, 2011 - Release 0.2.0
     
     * GWASGeneViewer (bugfix): variables renamed from GenomeView to GeneViewer
