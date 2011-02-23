@@ -112,7 +112,7 @@ public class GWASGeneViewer extends Composite {
 						@Override
 						public void onZoomResize(ZoomResizeEvent event) {
 							if (event.stop-event.start > minZoomLevelForGenomeView)
-								geneViewerContainer.setVisible(false);
+								toggleGenomeViewVisible(false);
 							if (isScatterChartLoaded)
 								scatterChart.setValueRangeX(event.start,event.stop);
 						}
