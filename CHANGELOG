@@ -1,13 +1,21 @@
+March 4, 2011 - Release 0.2.2
+    * Dygraph (lib): upgraded to new dygraph version.
+    * GeneViewer (lib): geneViewer library upgraded to 0.2.2
+    * GWASGeneViewer (feature): methods to support new view-region functionality in GeneViewer library added.
+    * GWASGeneViewer (feature): it is possible to select a specific SNP, which will be highlighted with a vertical 
+                                line in the scatterplot (dygraph)
+    * GWASGeneViewer (bugfix): If initial viewRegion is small enough, geneviewer will be displayed. 
+
 February 23, 2011 - Release 0.2.1
-    * GeneViewer (replaced): Replaced with version 0.2.1 
+    * GeneViewer (lib): upgraded to version 0.2.1 
 
 February 22, 2011 - Release 0.2.0
     
     * GWASGeneViewer (bugfix): variables renamed from GenomeView to GeneViewer
-    * GWASGeneViewer (added): new functions addClickGeneHandler and addSelectionHandler added
-    * GWASGeneViewer (added): new function addDisplayGene and clearDisplayGene added 
+    * GWASGeneViewer (feature): new functions addClickGeneHandler and addSelectionHandler added
+    * GWASGeneViewer (feature): new function addDisplayGene and clearDisplayGene added 
                           to allow highlighting of genes in the dygraph chart
-    * GeneViewer (added): GeneViewer library version 0.2 used
+    * GeneViewer (lib): GeneViewer library version 0.2 used
 
 February 14, 2011 - Release 0.1.0
 
