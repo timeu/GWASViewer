@@ -1,3 +1,7 @@
+March 14, 2011 - Release 0.2.3
+    * Dygraph (lib): upgraded to new dygraph version (includes upstream changes and new functions in canvas object).
+    * GWASGeneViewer (feature): support for drawing bonferroniThreshold added (can be set in draw method).
+
 March 4, 2011 - Release 0.2.2
     * Dygraph (lib): upgraded to new dygraph version.
     * GeneViewer (lib): geneViewer library upgraded to 0.2.2
