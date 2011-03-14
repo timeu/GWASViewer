@@ -54,6 +54,7 @@ public class GWASGeneViewer extends Composite {
 	protected DataTable dataTable;
 	protected boolean isScatterChartLoaded = false;
 	protected int snpPosX = -1;
+	protected double bonferroniThreshold = -1 ;
 	
 	// use instance because getSelection() does not work in onUnderlay event, because date_graph is not properly initialized
 	protected JsArray<Selection> selections =JsArray.createArray().cast(); 
@@ -147,12 +148,17 @@ public class GWASGeneViewer extends Composite {
 		scatterChart.redraw();
 	}
 	
-	public void draw(DataTable dataTable,double max_value, int start,int end)
+	public void draw(DataTable dataTable,double max_value, int start,int end) {
+		draw(dataTable,max_value,start,end,-1);
+	}
+	
+	public void draw(DataTable dataTable,double max_value, int start,int end,double bonferroniThreshold)
 	{
 		this.dataTable = dataTable;
 		this.max_value = max_value;
 		this.viewStart = start;
 		this.viewEnd = end;
+		this.bonferroniThreshold = bonferroniThreshold;
 		geneViewer.setViewRegion(start,end);
 		geneViewer.setChromosome(chromosome);
 		geneViewer.setDataSource(datasource);
@@ -238,6 +244,17 @@ public class GWASGeneViewer extends Composite {
 					event.canvas.fillRect(posX-0.5, posY, 1, event.area.getH());
 					event.canvas.arc(posX, posY, 3, 0, 2*Math.PI, false);
 					event.canvas.fill();
+					event.canvas.restore();
+				}
+				
+				if (bonferroniThreshold != -1) {
+					double posY = (int)event.dygraph.toDomYCoord(bonferroniThreshold, 0)-0.5;
+					event.canvas.save();
+					event.canvas.beginPath();
+					event.canvas.setStrokeStyle(gene_marker_color);
+					event.canvas.dashedLine(0, posY, width, posY);
+  				    event.canvas.closePath();
+                    event.canvas.stroke();
 					event.canvas.restore();
 				}
 			}
