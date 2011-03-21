@@ -1,3 +1,8 @@
+March 21, 2011 - Release 0.2.4
+    * GWASGeneViewer (bugfix): if the bonferroniThreshold was higher than the max_value, the bonferroniThreshold, 
+                               wouldn't be displayed. The max_value of the scatterplot will be displayed to the higher
+                               value (bonferroniThreshold or max_value).
+
 March 14, 2011 - Release 0.2.3
     * Dygraph (lib): upgraded to new dygraph version (includes upstream changes and new functions in canvas object).
     * GWASGeneViewer (feature): support for drawing bonferroniThreshold added (can be set in draw method).
