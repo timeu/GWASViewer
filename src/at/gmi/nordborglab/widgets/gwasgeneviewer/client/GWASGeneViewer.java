@@ -280,6 +280,9 @@ public class GWASGeneViewer extends Composite {
 	}
 	
 	protected Options setOptions(Dygraphs.Options options){
+		double maxValue = max_value;
+		if (maxValue < bonferroniThreshold)
+			maxValue = bonferroniThreshold;
 		options.setStrokeWidth(0.000000001);
 		options.setDrawPoints(true);
 		options.setPointSize(pointSize);
@@ -287,7 +290,7 @@ public class GWASGeneViewer extends Composite {
 		options.setWidth(width);
 		options.setHeight(scatterChartHeight);
 		options.setAxisLabelFontSize(12);
-		options.setValueRange(0,(int)max_value + 2);
+		options.setValueRange(0,(int)maxValue + 2);
 		options.setxAxisLabelWidth(100);
 		options.setyAxisLabelWidth(20);
 		options.setColors(new String[] {color});
