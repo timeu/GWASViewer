@@ -1,3 +1,10 @@
+June 15, 2011 - Release 0.2.5
+    * Dygraph (lib): upgraded to new dygraph version (0.2)
+    * GeneViewer (lib): upgraded to new Geneviewer library version (0.2.3) 
+    * GWASGeneViewer (feature): Selected SNPs are highlighted in the scatterplot 
+    * GWASGeneViewer (bugfix) : build.xml file modified: Call clean before release and build.
+    
+
 March 21, 2011 - Release 0.2.4
     * GWASGeneViewer (bugfix): if the bonferroniThreshold was higher than the max_value, the bonferroniThreshold, 
                                wouldn't be displayed. The max_value of the scatterplot will be displayed to the higher
