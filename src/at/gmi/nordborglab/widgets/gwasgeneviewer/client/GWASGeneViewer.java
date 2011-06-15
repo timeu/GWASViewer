@@ -131,7 +131,7 @@ public class GWASGeneViewer extends Composite {
 					if (clickGeneHandler != null) 
 						geneViewer.addClickGeneHandler(clickGeneHandler);
 					
-					if (minZoomLevelForGenomeView >= (viewEnd- viewStart)) {
+					if (minZoomLevelForGenomeView >= (viewEnd- viewStart) && (viewEnd - viewStart) > 0) {
 						toggleGenomeViewVisible(true);
 						geneViewer.redraw(true);
 					}
@@ -164,6 +164,9 @@ public class GWASGeneViewer extends Composite {
 		geneViewer.setDataSource(datasource);
 		geneViewer.setSize(width - DYGRAPHOFFSET, geneViewerHeight);
 		this.drawScatterChart();
+		if (minZoomLevelForGenomeView >= (viewEnd- viewStart)) {
+			toggleGenomeViewVisible(true);
+		}
 		if (selectHandler != null)
 			scatterChart.addSelectHandler(selectHandler);
 		scatterChart.addZoomHandler(new ZoomHandler() {
@@ -236,15 +239,17 @@ public class GWASGeneViewer extends Composite {
 				for (int i =0;i<selections.length();i++) 
 				{
 					Selection selection = selections.get(i);
-					double posX = event.dygraph.toDomXCoord(dataTable.getValueInt(selection.getRow(), 0));
-					double posY = event.dygraph.toDomYCoord(dataTable.getValueDouble(selection.getRow(), 1), 0);
-					event.canvas.save();
-					event.canvas.beginPath();
-					event.canvas.setFillStyle(gene_marker_color);
-					event.canvas.fillRect(posX-0.5, posY, 1, event.area.getH());
-					event.canvas.arc(posX, posY, 3, 0, 2*Math.PI, false);
-					event.canvas.fill();
-					event.canvas.restore();
+					if (selection != null) {
+						double posX = event.dygraph.toDomXCoord(dataTable.getValueInt(selection.getRow(), 0));
+						double posY = event.dygraph.toDomYCoord(dataTable.getValueDouble(selection.getRow(), 1), 0);
+						event.canvas.save();
+						event.canvas.beginPath();
+						event.canvas.setFillStyle(gene_marker_color);
+						event.canvas.fillRect(posX-0.5, posY, 1, event.area.getH());
+						event.canvas.arc(posX, posY, 3, 0, 2*Math.PI, false);
+						event.canvas.fill();
+						event.canvas.restore();
+					}
 				}
 				
 				if (bonferroniThreshold != -1) {
@@ -360,5 +365,44 @@ public class GWASGeneViewer extends Composite {
 
 	public void setGeneInfoUrl(String geneInfoUrl) {
 		geneViewer.setGeneInfoUrl(geneInfoUrl);
+	}
+	
+	public static Selection getSelectionFromPos(DataTable data,int pos) {
+		Selection selection = null;
+		for (int i=0;i<data.getNumberOfRows();i++) {
+			if (data.getValueInt(i, 0) == pos) {
+				selection = Selection.createRowSelection(i);
+				break;
+			}
+		}
+		return selection;
+	}
+	
+	public void addSelection(Selection selection) {
+		if (selection != null) {
+			selections.set(selections.length(), selection);
+		}
+	}
+	
+	public static Selection getTopSNP(DataTable data) {
+		Selection selection = null;
+		double top_pValue = -1;
+		for (int i=0;i<data.getNumberOfRows();i++) {
+			if (!data.isValueNull(i, 1))
+			{
+				double pValue = data.getValueDouble(i, 1);
+				if ( pValue > top_pValue)	{
+					selection = Selection.createRowSelection(i);
+					top_pValue = pValue;
+				}
+			}
+		}
+		return selection;
+	}
+	
+	public Selection getTopSNP() {
+		if (dataTable == null)
+			return null;
+		return getTopSNP(dataTable);
 	}
 }
