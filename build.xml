@@ -89,13 +89,13 @@
     </manifest>
   </target>
 	
-  <target name="jar" depends="jar.manifest,javac" description="Package into a jar">
+  <target name="jar" depends="clean,jar.manifest,javac" description="Package into a jar">
     <jar jarfile="gwasgeneviewer-${version.num}-SNAPSHOT.jar" manifest="${manifest.file}">
       <path refid="jar.files" />
     </jar>
   </target>
 		
-  <target name="release" depends="jar.manifest.release,javac" description="Build the jar for a release">
+  <target name="release" depends="clean,jar.manifest.release,javac" description="Build the jar for a release">
     <jar jarfile="gwasgeneviewer-noredist.jar" manifest="${manifest.file}">
       <path refid="jar.files" />
     </jar>
