@@ -1,3 +1,6 @@
+Ocotober 14, 2011 - Release 0.2.7
+    * GeneViewer (lib): upgraded to new GeneViewer library version (0.2.6)
+
 August 23, 2011 - Release 0.2.6
     * Dygraph (lib): upgraded to new dygraph version (0.3)
     * GeneViewer (lib): upgraded to new GeneViewer library version (0.2.4)
