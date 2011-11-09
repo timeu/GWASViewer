@@ -2,7 +2,7 @@
 <!-- Build file based on gwtp's build file (http://code.google.com/p/gwt-platform/) -->
 
 <project name="GWASGeneViewer" default="build" basedir=".">
-  <property name="version.num" value="0.2.7"/>
+  <property name="version.num" value="0.2.8"/>
   <property environment="env"/>
   <property name="in.src.folder" location="src" />
   <property name="in.test.folder" location="test" />
@@ -103,6 +103,7 @@
   	      <path refid="jar.files" />
   		  <zipfileset src="${lib.folder}/dygraph-gwt.jar" excludes="META-INF/*" />
   		  <zipfileset src="${lib.folder}/geneviewer.jar" excludes="META-INF/*" />
+		  <zipfileset src="${lib.folder}/processing-js-gwt.jar" excludes="META-INF/*" />
   	</jar>
   </target>
 
