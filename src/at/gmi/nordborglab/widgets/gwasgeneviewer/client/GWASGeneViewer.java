@@ -26,13 +26,14 @@ import com.google.gwt.core.client.JsArrayMixed;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTMLPanel;
+import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.Selection;
 
-public class GWASGeneViewer extends Composite {
+public class GWASGeneViewer extends Composite implements RequiresResize{
 
 	private static ScatterGenomeChartUiBinder uiBinder = GWT
 			.create(ScatterGenomeChartUiBinder.class);
@@ -69,7 +70,7 @@ public class GWASGeneViewer extends Composite {
 	//General settings
 	protected String chromosome;
 	protected int width = 1000;
-	protected int geneViewerHeight = 200;
+	protected int geneViewerHeight = 300;
 	protected DataSource datasource = null;
 	protected int viewStart = 0;
 	protected int viewEnd = 0;
@@ -183,8 +184,8 @@ public class GWASGeneViewer extends Composite {
 				{
 					if (event.maxX - event.minX<= minZoomLevelForGenomeView)
 					{
-						geneViewer.updateZoom(event.minX, event.maxX);
 						toggleGenomeViewVisible(true);
+						geneViewer.updateZoom(event.minX, event.maxX);
 					}
 					else	
 						toggleGenomeViewVisible(false);
@@ -307,7 +308,12 @@ public class GWASGeneViewer extends Composite {
 	
 	
 	public void toggleGenomeViewVisible(boolean visible) {
-			geneViewerContainer.setVisible(visible);
+			//geneViewerContainer.setVisible(visible);
+			geneViewer.setVisible(visible);
+			if (visible) {
+				geneViewer.setSize(width - DYGRAPHOFFSET, geneViewerHeight);
+				geneViewer.onResize();
+			}
 	}
 	
 	public void setMinZoomLevelForGenomeView(Integer minZoomLevelForGenomeView) {
@@ -404,5 +410,11 @@ public class GWASGeneViewer extends Composite {
 		if (dataTable == null)
 			return null;
 		return getTopSNP(dataTable);
+	}
+
+	@Override
+	public void onResize() {
+		geneViewer.onResize();
+		scatterChart.onResize();
 	}
 }

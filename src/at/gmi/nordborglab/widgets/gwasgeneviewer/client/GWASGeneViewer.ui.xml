@@ -5,7 +5,7 @@
 	xmlns:gview="urn:import:at.gmi.nordborglab.widgets.geneviewer.client">
 	<ui:style>
 		.genomeView {
-      margin: 0px 5px 0px 26px; 
+      margin: 0px 5px 0px 0px; 
     }
 	</ui:style>
 	<g:FlowPanel height="100%" >
@@ -13,8 +13,8 @@
 			<g:Label horizontalAlignment="ALIGN_LEFT" ui:field="chromosome_label"/>
 		</g:HTMLPanel>
 		<dyg:Dygraphs ui:field="scatterChart"></dyg:Dygraphs>
-		<g:HTMLPanel ui:field="geneViewerContainer" visible="false">
-	  	   <gview:GeneViewer ui:field="geneViewer" addStyleNames='{style.genomeView}'></gview:GeneViewer>
+		<g:HTMLPanel ui:field="geneViewerContainer" visible="true">
+	  	   <gview:GeneViewer ui:field="geneViewer" visible="false" addStyleNames='{style.genomeView}'></gview:GeneViewer>
 	  	</g:HTMLPanel>
 	</g:FlowPanel>
 </ui:UiBinder> 
