@@ -8,11 +8,11 @@
       margin: 0px 5px 0px 0px; 
     }
 	</ui:style>
-	<g:FlowPanel height="100%" >
+	<g:FlowPanel height="100%" width="100%" >
 		<g:HTMLPanel>
 			<g:Label horizontalAlignment="ALIGN_LEFT" ui:field="chromosome_label"/>
 		</g:HTMLPanel>
-		<dyg:Dygraphs ui:field="scatterChart"></dyg:Dygraphs>
+		<dyg:Dygraphs ui:field="scatterChart" height="100%" width="100%"></dyg:Dygraphs>
 		<g:HTMLPanel ui:field="geneViewerContainer" visible="true">
 	  	   <gview:GeneViewer ui:field="geneViewer" visible="false" addStyleNames='{style.genomeView}'></gview:GeneViewer>
 	  	</g:HTMLPanel>
