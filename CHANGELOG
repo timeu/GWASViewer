@@ -1,3 +1,8 @@
+November 11, 2011 - Release 0.2.9
+    * GeneViewer (lib)       : upgraded to new GeneViewer library version (0.2.8)
+    * Dygraph (lib)          : upgraded to new Dygraph library version (0.5)
+    * GWASGeneViewer (Bugfix): proper layout handling. Size will be dynamically calculated from containers.
+
 November 9, 2011 - Release 0.2.8
     * GeneViewer (lib):        upgraded to new GeneViewer library version (0.2.7)
     * processing-js-gwt (lib): Added processing-js-gwt library
