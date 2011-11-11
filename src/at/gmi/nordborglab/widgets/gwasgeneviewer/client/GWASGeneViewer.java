@@ -23,6 +23,9 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayInteger;
 import com.google.gwt.core.client.JsArrayMixed;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTMLPanel;
@@ -44,6 +47,14 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 	@UiField HTMLPanel geneViewerContainer;
 	@UiField Label chromosome_label;
 	@UiField GeneViewer geneViewer;
+	
+    private final ScheduledCommand layoutCmd = new ScheduledCommand() {
+    	public void execute() {
+    		layoutScheduled = false;
+		    forceLayout();
+		}
+    };
+	private boolean layoutScheduled = false;
 	
 	//Scatterchart settings
 	private static int DYGRAPHOFFSET = 31;
@@ -69,8 +80,8 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 	
 	//General settings
 	protected String chromosome;
-	protected int width = 1000;
-	protected int geneViewerHeight = 300;
+	protected int width = 0;
+	protected int geneViewerHeight = 326;
 	protected DataSource datasource = null;
 	protected int viewStart = 0;
 	protected int viewEnd = 0;
@@ -84,10 +95,25 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 		initGenomeView();
 	}
 	
-	public GWASGeneViewer(String chromosome,String color,String gene_marker_color,int width,DataSource datasource) {
+	@Override
+	public void setWidth(String width) {
+		scatterChart.setWidth(width);
+	}
+	
+	@Override
+	public void setHeight(String height) {
+		scatterChart.setHeight(height);
+	}
+	
+	@Override
+	public void setSize(String width,String height ) {
+		scatterChart.setSize(width, height);
+	}
+	
+	public GWASGeneViewer(String chromosome,String color,String gene_marker_color,DataSource datasource) {
 		this.chromosome = chromosome;
 		this.color = color;
-		this.width=width;
+		//this.width=width;
 		this.datasource = datasource;
 		this.gene_marker_color = gene_marker_color;
 		initWidget(uiBinder.createAndBindUi(this));
@@ -113,8 +139,12 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 	{
 		try
 		{
+			scatterChart.setSize("100%", scatterChartHeight+"px");
+			geneViewer.setWidthOffset(DYGRAPHOFFSET);
 			geneViewer.setViewRegion(viewStart, viewEnd);
-			geneViewer.setSize(width - DYGRAPHOFFSET, geneViewerHeight);
+			geneViewer.setWidth("100%");
+			geneViewer.setHeight(geneViewerHeight+"px");
+			//geneViewer.setSize(width - DYGRAPHOFFSET, geneViewerHeight);
 			geneViewer.load(new Runnable() {
 				@Override
 				public void run() {
@@ -163,7 +193,7 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 		geneViewer.setViewRegion(start,end);
 		geneViewer.setChromosome(chromosome);
 		geneViewer.setDataSource(datasource);
-		geneViewer.setSize(width - DYGRAPHOFFSET, geneViewerHeight);
+		//geneViewer.setSize(width - DYGRAPHOFFSET, geneViewerHeight);
 		this.drawScatterChart();
 		if (minZoomLevelForGenomeView >= (viewEnd- viewStart)) {
 			toggleGenomeViewVisible(true);
@@ -293,11 +323,10 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 		options.setDrawPoints(true);
 		options.setPointSize(pointSize);
 		options.setIncludeZero(true);
-		options.setWidth(width);
-		options.setHeight(scatterChartHeight);
-		options.setAxisLabelFontSize(12);
+		//options.setWidth(width);
+		//options.setHeight(scatterChartHeight);
+		options.setAxisLabelFontSize(11);
 		options.setValueRange(0,(int)maxValue + 2);
-		options.setxAxisLabelWidth(100);
 		options.setyAxisLabelWidth(20);
 		options.setColors(new String[] {color});
 		options.setMinimumDistanceForHighlight(10);
@@ -309,9 +338,11 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 	
 	public void toggleGenomeViewVisible(boolean visible) {
 			//geneViewerContainer.setVisible(visible);
+			if (geneViewer.isVisible() == visible)
+				return;
 			geneViewer.setVisible(visible);
 			if (visible) {
-				geneViewer.setSize(width - DYGRAPHOFFSET, geneViewerHeight);
+				//geneViewer.setSize(width - DYGRAPHOFFSET, geneViewerHeight);
 				geneViewer.onResize();
 			}
 	}
@@ -414,7 +445,29 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 
 	@Override
 	public void onResize() {
+		scheduledLayout();
+	}
+	
+	@Override 
+	public void onAttach() {
+		super.onAttach();
+		scheduledLayout();
+	}
+	
+	
+	public void forceLayout() {
+		if (!isAttached())
+			return;
+		int width = getParent().getParent().getElement().getClientWidth();
+		getElement().getStyle().setWidth(width, Unit.PX);
 		geneViewer.onResize();
 		scatterChart.onResize();
+	}
+	
+	private void scheduledLayout() {
+	    if (isAttached() && !layoutScheduled) {
+	      layoutScheduled = true;
+	      Scheduler.get().scheduleDeferred(layoutCmd);
+	    }
 	}
 }
