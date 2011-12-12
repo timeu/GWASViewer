@@ -1,3 +1,8 @@
+December 10, 2011 - Release 0.3.0
+    * GWASGeneViewer (Feature): Library mavenized 
+    * Dygraph (lib): Upgraded to Dygraph library version 0.6.0 (Maven)
+    * GeneViewer (lib): Upgraded to GeneViewer library version 0.3.0 (Maven)
+
 November 11, 2011 - Release 0.2.9
     * GeneViewer (lib)       : upgraded to new GeneViewer library version (0.2.8)
     * Dygraph (lib)          : upgraded to new Dygraph library version (0.5)
