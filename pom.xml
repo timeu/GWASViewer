@@ -94,8 +94,8 @@
 </dependencies>
   </dependencyManagement>
   <scm>
-  	<url>https://timeu@github.com/timeu/GeneViewer.git</url>
-  	<connection>https://timeu@github.com/timeu/GeneViewer.git</connection>
-  	<developerConnection>https://timeu@github.com/timeu/GeneViewer.git</developerConnection>
+  	<url>https://timeu@github.com/timeu/GWASGeneViewer.git</url>
+  	<connection>https://timeu@github.com/timeu/GWASGeneViewer.git</connection>
+  	<developerConnection>https://timeu@github.com/timeu/GWASGeneViewer.git</developerConnection>
   </scm>
 </project>
