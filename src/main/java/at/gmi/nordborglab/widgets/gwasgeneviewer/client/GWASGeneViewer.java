@@ -27,6 +27,7 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.uibinder.client.UiBinder;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.RequiresResize;
@@ -285,6 +286,7 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 				
 				if (bonferroniThreshold != -1) {
 					double posY = (int)event.dygraph.toDomYCoord(bonferroniThreshold, 0)-0.5;
+					int width = event.canvas.getWidth();
 					event.canvas.save();
 					event.canvas.beginPath();
 					event.canvas.setStrokeStyle(gene_marker_color);
