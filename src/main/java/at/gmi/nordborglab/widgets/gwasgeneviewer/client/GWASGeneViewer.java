@@ -286,7 +286,7 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 				
 				if (bonferroniThreshold != -1) {
 					double posY = (int)event.dygraph.toDomYCoord(bonferroniThreshold, 0)-0.5;
-					int width = event.canvas.getWidth();
+					int width = event.canvas.getCanvas().getWidth();
 					event.canvas.save();
 					event.canvas.beginPath();
 					event.canvas.setStrokeStyle(gene_marker_color);
@@ -334,6 +334,7 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 		options.setMinimumDistanceForHighlight(10);
 		options.setIncludeYPositionForHightlight(true);
 		options.setDateWindow(viewStart, viewEnd);
+		options.setAnimatedZooms(true);
 		return options;
 	}
 	
