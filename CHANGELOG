@@ -1,3 +1,6 @@
+December 21, 2011 - Release 0.4.1
+    * GeneViewer (Update): Updated to version 0.4.1
+
 December 20, 2011 - Release 0.4.0 
     * GWASGeneViewer (Bugfix): BonferroniThreshold is correctly displayed
     * Maven (Update): Official release and correct dependencies.
