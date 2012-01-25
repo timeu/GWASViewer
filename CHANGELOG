@@ -1,3 +1,8 @@
+January 25, 2011 - Release 0.4.3
+   * GeneViewer (lib): Updated to version 0.4.3
+   * Dygraph (lib): Updated to version 0.7.2
+   * GWASGeneViewer: support for mutliple series added
+
 January 18, 2011 - Release 0.4.2 
    * GeneViwer (Update): Updated to version 0.4.2
 
