@@ -60,7 +60,8 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 	//Scatterchart settings
 	private static int DYGRAPHOFFSET = 31;
 	protected double max_value;
-	protected String color;
+	protected String[] color;
+	
 	protected String gene_marker_color;
 	protected int pointSize =2;
 	protected int scatterChartHeight=200;
@@ -111,7 +112,8 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 		scatterChart.setSize(width, height);
 	}
 	
-	public GWASGeneViewer(String chromosome,String color,String gene_marker_color,DataSource datasource) {
+	public GWASGeneViewer(String chromosome,String[] color,String gene_marker_color,DataSource datasource) {
+		
 		this.chromosome = chromosome;
 		this.color = color;
 		//this.width=width;
@@ -330,7 +332,7 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 		options.setAxisLabelFontSize(11);
 		options.setValueRange(0,(int)maxValue + 2);
 		options.setyAxisLabelWidth(20);
-		options.setColors(new String[] {color});
+		options.setColors(color);
 		options.setMinimumDistanceForHighlight(10);
 		options.setIncludeYPositionForHightlight(true);
 		options.setDateWindow(viewStart, viewEnd);
@@ -358,7 +360,7 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 		this.chromosome = chromosome;
 	}
 	
-	public void setColor(String color) {
+	public void setColor(String[] color) {
 		this.color = color;
 	}
 	
@@ -440,6 +442,10 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 		return selection;
 	}
 	
+	public void setScatterChartVisibilityForSeries(int id,boolean isVisible) {
+		scatterChart.setVisibility(id, isVisible);
+	}
+	
 	public Selection getTopSNP() {
 		if (dataTable == null)
 			return null;
@@ -472,5 +478,10 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 	      layoutScheduled = true;
 	      Scheduler.get().scheduleDeferred(layoutCmd);
 	    }
+	}
+	
+	public void destroy() {
+		scatterChart.destroy();
+		geneViewer.destroy();
 	}
 }
