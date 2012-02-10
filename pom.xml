@@ -48,7 +48,7 @@
     <dependency>
     	<groupId>at.gmi.nordborglab.widgets</groupId>
     	<artifactId>geneviewer</artifactId>
-    	<version>0.4.3-SNAPSHOT</version>
+    	<version>0.4.5-SNAPSHOT</version>
     </dependency>
   </dependencies>
   
