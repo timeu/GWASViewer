@@ -1,3 +1,10 @@
+Feburary 10, 2012 - Release 0.4.4
+   * GeneViewer (lib): Updated to version 0.4.4 
+   * Dygraph (lib): Updated to version 0.7.3 
+   * GWASGeneViewer: Bugfix: Zooming at the beginning and end of scatterplot works.
+   * GWASGeneViewer: Bugfix: re-drawing scatterplot with different data clears selected snps.
+   * GWASGeneViewer: Bugfix: display labels for x and y-axis. 
+   
 January 25, 2011 - Release 0.4.3
    * GeneViewer (lib): Updated to version 0.4.3
    * Dygraph (lib): Updated to version 0.7.2
