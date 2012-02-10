@@ -3,8 +3,10 @@ package at.gmi.nordborglab.widgets.gwasgeneviewer.client;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.danvk.dygraphs.client.DygraphOptions;
 import org.danvk.dygraphs.client.Dygraphs;
-import org.danvk.dygraphs.client.Dygraphs.Options;
+import org.danvk.dygraphs.client.DygraphsJS;
+import org.danvk.dygraphs.client.events.Canvas;
 import org.danvk.dygraphs.client.events.HightlightHandler;
 import org.danvk.dygraphs.client.events.SelectHandler;
 import org.danvk.dygraphs.client.events.UnderlayHandler;
@@ -19,6 +21,8 @@ import at.gmi.nordborglab.widgets.geneviewer.client.event.ClickGeneHandler;
 import at.gmi.nordborglab.widgets.geneviewer.client.event.ZoomResizeEvent;
 import at.gmi.nordborglab.widgets.geneviewer.client.event.ZoomResizeHandler;
 
+import com.google.gwt.canvas.dom.client.Context2d;
+import com.google.gwt.canvas.dom.client.FillStrokeStyle;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayInteger;
@@ -215,6 +219,13 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 				}
 				else
 				{
+					
+					//Bugfix for http://code.google.com/p/dygraphs/issues/detail?id=280&thanks=280&ts=1328714824
+					if (event.minX < 0)
+						scatterChart.setValueRangeX(0, event.maxX);
+					else if (event.maxX > viewEnd)  
+						scatterChart.setValueRangeX(event.minX, viewEnd);
+					
 					if (event.maxX - event.minX<= minZoomLevelForGenomeView)
 					{
 						toggleGenomeViewVisible(true);
@@ -246,27 +257,31 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 	protected void drawScatterChart()
 	{
 		chromosome_label.setText(chromosome);
-		Dygraphs.Options options = Dygraphs.Options.create();
+		DygraphOptions options = DygraphOptions.create();
 		options = setOptions(options);
 		scatterChart.addUnderlayHandler(new UnderlayHandler() {
 			
 			@Override
 			public void onUnderlay(UnderlayEvent event) {
+				
+				Canvas ctx = event.canvas;
+				DygraphsJS dygraphjs = event.dygraph;
 				for (Gene gene:displayGenes) {
 					if (gene.getChromosome().equals(chromosome) && (gene.getStart() >= viewStart || gene.getEnd() <= viewEnd))
 					{
-						double left = event.dygraph.toDomXCoord(gene.getStart());
-						double right = event.dygraph.toDomXCoord(gene.getEnd());
+						double left = dygraphjs.toDomXCoord(gene.getStart());
+						double right = dygraphjs.toDomXCoord(gene.getEnd());
 						double length = right - left;
 						if (length < 1)
 						{
 							left = left -0.5;
 							length = 1;
 						}
-						event.canvas.save();
-						event.canvas.setFillStyle(gene_marker_color);
-						event.canvas.fillRect(left, event.area.getY(), length, event.area.getH());
-						event.canvas.restore();
+						ctx.save();
+						ctx.setFillStyle(gene_marker_color);
+						ctx.setStrokeStyle("#000000");
+						ctx.fillRect(left, event.area.getY(), length, event.area.getH());
+						ctx.restore();
 					}
 				}
 				
@@ -274,28 +289,30 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 				{
 					Selection selection = selections.get(i);
 					if (selection != null) {
-						double posX = event.dygraph.toDomXCoord(dataTable.getValueInt(selection.getRow(), 0));
-						double posY = event.dygraph.toDomYCoord(dataTable.getValueDouble(selection.getRow(), 1), 0);
-						event.canvas.save();
-						event.canvas.beginPath();
-						event.canvas.setFillStyle(gene_marker_color);
-						event.canvas.fillRect(posX-0.5, posY, 1, event.area.getH());
-						event.canvas.arc(posX, posY, 3, 0, 2*Math.PI, false);
-						event.canvas.fill();
-						event.canvas.restore();
+						double posX = dygraphjs.toDomXCoord(dataTable.getValueInt(selection.getRow(), 0));
+						double posY = dygraphjs.toDomYCoord(dataTable.getValueDouble(selection.getRow(), 1), 0);
+						ctx.save();
+						ctx.setFillStyle(gene_marker_color);
+						ctx.setStrokeStyle("#000000");
+						ctx.beginPath();
+						ctx.arc(posX,posY,4,0,Math.PI*2,true);
+						ctx.fillRect(posX-0.5, posY, 1, dygraphjs.getArea().getH());
+						ctx.closePath();
+						ctx.fill();
+						ctx.restore();
 					}
 				}
 				
 				if (bonferroniThreshold != -1) {
 					double posY = (int)event.dygraph.toDomYCoord(bonferroniThreshold, 0)-0.5;
-					int width = event.canvas.getCanvas().getWidth();
-					event.canvas.save();
-					event.canvas.beginPath();
-					event.canvas.setStrokeStyle(gene_marker_color);
-					event.canvas.dashedLine(0, posY, width, posY);
-  				    event.canvas.closePath();
-                    event.canvas.stroke();
-					event.canvas.restore();
+					int width = ctx.getCanvas().getWidth();
+					ctx.save();
+					ctx.beginPath();
+					ctx.setStrokeStyle(gene_marker_color);
+					ctx.dashedLine(0, posY, width, posY);
+  				    ctx.closePath();
+                    ctx.stroke();
+					ctx.restore();
 				}
 			}
 				
@@ -312,14 +329,15 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 			selections.set(0, selection);
 		}
 		scatterChart.draw(dataTable,setOptions(options));
-		if (selections.length() > 0)
-			scatterChart.setSelections(selections);
+		//if (selections.length() > 0)
+		scatterChart.setSelections(selections);
 		
 		//scatterChart.setSelections()
 		isScatterChartLoaded = true;
 	}
 	
-	protected Options setOptions(Dygraphs.Options options){
+	
+	protected DygraphOptions setOptions(DygraphOptions options){
 		double maxValue = max_value;
 		if (maxValue < bonferroniThreshold)
 			maxValue = bonferroniThreshold;
@@ -327,8 +345,10 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 		options.setDrawPoints(true);
 		options.setPointSize(pointSize);
 		options.setIncludeZero(true);
-		//options.setWidth(width);
-		//options.setHeight(scatterChartHeight);
+		options.setYlabel("-log10(p)");
+		options.setYLabelWidth(13.0);
+		options.setXLabelHeight(13.0);
+		options.setXlabel("Position");
 		options.setAxisLabelFontSize(11);
 		options.setValueRange(0,(int)maxValue + 2);
 		options.setyAxisLabelWidth(20);
@@ -396,9 +416,9 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 	public void addClickGeneHandler(ClickGeneHandler handler) {
 		if (isGeneViewerLoaded) {
 			geneViewer.addClickGeneHandler(handler);
-	}
-	else
-		this.clickGeneHandler = handler;
+		}
+		else
+			this.clickGeneHandler = handler;
 	}
 	
 	public void setSnpPosX(int snpPosX) {
@@ -422,8 +442,12 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 	
 	public void addSelection(Selection selection) {
 		if (selection != null) {
-			selections.set(selections.length(), selection);
+			selections.push(selection);
 		}
+	}
+	
+	public void clearSelection() {
+		selections = JsArray.createArray().cast(); 
 	}
 	
 	public static Selection getTopSNP(DataTable data) {
