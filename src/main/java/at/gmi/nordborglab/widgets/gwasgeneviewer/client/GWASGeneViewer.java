@@ -1,7 +1,9 @@
 package at.gmi.nordborglab.widgets.gwasgeneviewer.client;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.danvk.dygraphs.client.DygraphOptions;
 import org.danvk.dygraphs.client.Dygraphs;
@@ -29,8 +31,11 @@ import com.google.gwt.core.client.JsArrayInteger;
 import com.google.gwt.core.client.JsArrayMixed;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.DivElement;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.uibinder.client.UiBinder;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTMLPanel;
@@ -91,7 +96,7 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 	protected DataSource datasource = null;
 	protected int viewStart = 0;
 	protected int viewEnd = 0;
-	protected ArrayList<Gene> displayGenes = new ArrayList<Gene>();
+	protected HashMap<Gene, DivElement> displayGenes = new HashMap<Gene, DivElement>();
 	
 	
 	
@@ -133,12 +138,21 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 
 	public void addDisplayGene(Gene gene)
 	{
-		if (gene.getChromosome().equals(this.chromosome))
-			displayGenes.add(gene);
+		if (gene.getChromosome().equals(this.chromosome)) {
+			if (!displayGenes.containsKey(gene)) {
+				DivElement elem = DOM.createDiv().cast();
+				elem.setInnerHTML(gene.getName());
+				elem.setId(gene.getName()+"_label");
+				displayGenes.put(gene,elem);
+			}
+		}
 	}
 	
 	public void clearDisplayGenes() 
 	{
+		for (DivElement elem: displayGenes.values()) {
+			scatterChart.getElement().removeChild(elem);
+		}
 		displayGenes.clear();
 	}
 	
@@ -266,7 +280,9 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 				
 				Canvas ctx = event.canvas;
 				DygraphsJS dygraphjs = event.dygraph;
-				for (Gene gene:displayGenes) {
+				for (Map.Entry<Gene, DivElement> entry : displayGenes.entrySet()) {
+				    Gene gene = entry.getKey();
+				    DivElement geneLabel = entry.getValue();
 					if (gene.getChromosome().equals(chromosome) && (gene.getStart() >= viewStart || gene.getEnd() <= viewEnd))
 					{
 						double left = dygraphjs.toDomXCoord(gene.getStart());
@@ -282,6 +298,14 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 						ctx.setStrokeStyle("#000000");
 						ctx.fillRect(left, event.area.getY(), length, event.area.getH());
 						ctx.restore();
+						String color=gene_marker_color;
+						double x = Math.round(left)+3;
+						if (x+60 > scatterChart.getOffsetWidth())
+							x = x - 60;
+						int y = scatterChart.getAbsoluteTop() - scatterChart.getOffsetHeight() + 8; 
+						geneLabel.setAttribute("style", "position: absolute; font-size: 11px; z-index: 10; color: "+color+"; line-height: normal; overflow-x: hidden; overflow-y: hidden; top: "+y+"px; left: "+x+"px; text-align: right;");
+						if (DOM.getElementById(geneLabel.getId()) == null)
+							scatterChart.getElement().appendChild(geneLabel);
 					}
 				}
 				
