@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>at.gmi.nordborglab.widgets</groupId>
   <artifactId>gwasgeneviewer</artifactId>
-  <version>0.4.6-SNAPSHOT</version>
+  <version>0.4.6</version>
   <name>GWASGeneViewer</name>
   
   <parent>
@@ -48,7 +48,7 @@
     <dependency>
     	<groupId>at.gmi.nordborglab.widgets</groupId>
     	<artifactId>geneviewer</artifactId>
-    	<version>0.4.6-SNAPSHOT</version>
+    	<version>0.4.5</version>
     </dependency>
   </dependencies>
   
