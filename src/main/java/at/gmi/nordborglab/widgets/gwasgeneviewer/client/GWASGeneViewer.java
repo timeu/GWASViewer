@@ -302,8 +302,8 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 						double x = Math.round(left)+3;
 						if (x+60 > scatterChart.getOffsetWidth())
 							x = x - 60;
-						int y = scatterChart.getAbsoluteTop() - scatterChart.getOffsetHeight() + 8; 
-						geneLabel.setAttribute("style", "position: absolute; font-size: 11px; z-index: 10; color: "+color+"; line-height: normal; overflow-x: hidden; overflow-y: hidden; top: "+y+"px; left: "+x+"px; text-align: right;");
+						int y = 2; 
+						geneLabel.setAttribute("style", "position: absolute; font-size: 11px; z-index: 10; color: "+color+"; line-height: normal; overflow-x: hidden; overflow-y: hidden; top: "+y+"px; left: "+x+"px; text-align: right; width:60px");
 						if (DOM.getElementById(geneLabel.getId()) == null)
 							scatterChart.getElement().appendChild(geneLabel);
 					}
