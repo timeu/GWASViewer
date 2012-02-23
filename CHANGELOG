@@ -1,3 +1,6 @@
+February 23, 2012 - Release 0.4.7
+  * GWASGeneViewer (bugfix): Gene labels are now positioned correctly in the scatterplots
+  
 February 22, 2012 - Release 0.4.6
   * GWASGeneViewer (feature): Show gene name next to gene marker line 
 
