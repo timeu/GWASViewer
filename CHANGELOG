@@ -1,3 +1,7 @@
+March 20, 2012 - Release 0.4.8 
+  * GeneViewer (lib): Updated to version 0.4.6
+  * GWASGeneViewer (Bugfix): Added HighlightSeriesOption. 
+
 February 23, 2012 - Release 0.4.7
   * GWASGeneViewer (bugfix): Gene labels are now positioned correctly in the scatterplots
   
