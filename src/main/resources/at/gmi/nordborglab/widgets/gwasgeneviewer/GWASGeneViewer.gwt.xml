@@ -4,6 +4,7 @@
 	<inherits name="com.google.gwt.user.User" />
 	<inherits name="com.google.gwt.visualization.Visualization"/>
 	<inherits name="org.danvk.dygraphs.Dygraph" />
-	<inherits name="at.gmi.nordborglab.widgets.geneviewer.GeneViewer" />    
+	<inherits name="at.gmi.nordborglab.widgets.geneviewer.GeneViewer" />
+	<inherits name="at.gmi.nordborglab.widgets.ldviewer.LDViewer" />    
 	<source path="client"/>
 </module>

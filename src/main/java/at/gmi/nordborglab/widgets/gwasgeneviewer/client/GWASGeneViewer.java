@@ -1,21 +1,22 @@
 package at.gmi.nordborglab.widgets.gwasgeneviewer.client;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import org.danvk.dygraphs.client.DygraphOptions;
+import org.danvk.dygraphs.client.DygraphOptions.HighlightSeriesOptions;
 import org.danvk.dygraphs.client.Dygraphs;
 import org.danvk.dygraphs.client.DygraphsJS;
-import org.danvk.dygraphs.client.DygraphOptions.HighlightSeriesOptions;
 import org.danvk.dygraphs.client.events.Canvas;
+import org.danvk.dygraphs.client.events.DrawHighlightPointHandler;
+import org.danvk.dygraphs.client.events.DrawPointHandler;
 import org.danvk.dygraphs.client.events.HightlightHandler;
 import org.danvk.dygraphs.client.events.SelectHandler;
 import org.danvk.dygraphs.client.events.UnderlayHandler;
 import org.danvk.dygraphs.client.events.UnhighlightHandler;
 import org.danvk.dygraphs.client.events.ZoomHandler;
-import org.danvk.dygraphs.client.events.UnderlayHandler.UnderlayEvent;
 
 import at.gmi.nordborglab.widgets.geneviewer.client.GeneViewer;
 import at.gmi.nordborglab.widgets.geneviewer.client.datasource.DataSource;
@@ -23,27 +24,37 @@ import at.gmi.nordborglab.widgets.geneviewer.client.datasource.Gene;
 import at.gmi.nordborglab.widgets.geneviewer.client.event.ClickGeneHandler;
 import at.gmi.nordborglab.widgets.geneviewer.client.event.ZoomResizeEvent;
 import at.gmi.nordborglab.widgets.geneviewer.client.event.ZoomResizeHandler;
+import at.gmi.nordborglab.widgets.gwasgeneviewer.client.resources.MyResources;
+import at.gmi.nordborglab.widgets.ldviewer.client.LDViewer;
+import at.gmi.nordborglab.widgets.ldviewer.client.datasource.LDDataSource;
+import at.gmi.nordborglab.widgets.ldviewer.client.datasource.impl.LDDataPoint;
+import at.gmi.nordborglab.widgets.ldviewer.client.event.HighlightLDEvent;
+import at.gmi.nordborglab.widgets.ldviewer.client.event.HighlightLDHandler;
+import at.gmi.nordborglab.widgets.ldviewer.client.event.MiddleMouseClickEvent;
+import at.gmi.nordborglab.widgets.ldviewer.client.event.MiddleMouseClickHandler;
+import at.gmi.nordborglab.widgets.ldviewer.client.event.UnhighlightLDEvent;
+import at.gmi.nordborglab.widgets.ldviewer.client.event.UnhighlightLDHandler;
 
-import com.google.gwt.canvas.dom.client.Context2d;
-import com.google.gwt.canvas.dom.client.FillStrokeStyle;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayInteger;
-import com.google.gwt.core.client.JsArrayMixed;
+import com.google.gwt.core.client.JsArrayNumber;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.DivElement;
-import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.uibinder.client.UiBinder;
+import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTMLPanel;
-import com.google.gwt.user.client.ui.RequiresResize;
-import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.RequiresResize;
+import com.google.gwt.user.client.ui.ToggleButton;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.Selection;
 
@@ -58,6 +69,10 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 	@UiField HTMLPanel geneViewerContainer;
 	@UiField Label chromosome_label;
 	@UiField GeneViewer geneViewer;
+	@UiField LDViewer ldviewer;
+	@UiField ToggleButton settings_btn;
+	@UiField PopupPanel settings_popup;
+	@UiField(provided=true) MyResources mainRes;
 	
     private final ScheduledCommand layoutCmd = new ScheduledCommand() {
     	public void execute() {
@@ -83,12 +98,21 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 	// use instance because getSelection() does not work in onUnderlay event, because date_graph is not properly initialized
 	protected JsArray<Selection> selections =JsArray.createArray().cast(); 
 	
+	
 	protected SelectHandler selectHandler=null;
 	protected ClickGeneHandler clickGeneHandler = null;
 	
 	//GenomeView settings
 	protected Integer minZoomLevelForGenomeView = 1500000;
 	protected boolean isGeneViewerLoaded = false;
+	
+	//LDViewer settings
+	protected Integer maximumNumberOfSNPs = 500;
+	protected boolean isLDViewerLoaded = false;
+	protected HashMap<Integer,LDDataPoint> highlightedLDDataPoints = null;
+	protected LDDataPoint highlightedLDDataPoint = null;
+	protected double threshold = 0.3;
+	protected int maxColor = 255;
 	
 	//General settings
 	protected String chromosome;
@@ -99,12 +123,41 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 	protected int viewEnd = 0;
 	protected HashMap<Gene, DivElement> displayGenes = new HashMap<Gene, DivElement>();
 	
-	
-	
+	private static Logger logger = Logger.getLogger("at.gmi.nordborglab.widgets.gwasgeneviewer");
 
 	public GWASGeneViewer() {
-		initWidget(uiBinder.createAndBindUi(this));
+		initWidget();
 		initGenomeView();
+		initLDViewer();
+	}
+	
+	public GWASGeneViewer(String chromosome,String[] color,String gene_marker_color,DataSource datasource,LDDataSource ldDataSource) {
+		this.chromosome = chromosome;
+		this.color = color;
+		//this.width=width;
+		this.datasource = datasource;
+		this.gene_marker_color = gene_marker_color;
+		initWidget();
+		initGenomeView();
+		initLDViewer();
+	}
+	
+	private void initWidget() {
+		mainRes = GWT.create(MyResources.class);
+		mainRes.style().ensureInjected();
+		initWidget(uiBinder.createAndBindUi(this));
+		settings_popup.removeFromParent();
+		settings_popup.setAnimationEnabled(true);
+		settings_btn.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+			
+			@Override
+			public void onValueChange(ValueChangeEvent<Boolean> event) {
+				if (!event.getValue())
+					settings_popup.hide();
+				else
+					settings_popup.showRelativeTo(settings_btn);
+			}
+		});
 	}
 	
 	@Override
@@ -122,16 +175,7 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 		scatterChart.setSize(width, height);
 	}
 	
-	public GWASGeneViewer(String chromosome,String[] color,String gene_marker_color,DataSource datasource) {
-		
-		this.chromosome = chromosome;
-		this.color = color;
-		//this.width=width;
-		this.datasource = datasource;
-		this.gene_marker_color = gene_marker_color;
-		initWidget(uiBinder.createAndBindUi(this));
-		initGenomeView();
-	}
+	
 	
 	public String getChromosome() {
 		return chromosome;
@@ -155,6 +199,92 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 			scatterChart.getElement().removeChild(elem);
 		}
 		displayGenes.clear();
+	}
+	
+	private String getTransparentColor() {
+		String transColor = color[0];
+		String alpha = "0.4";
+		if (color[0] == "green")
+			transColor = "rgba(0,128,0,"+alpha+")";
+		else if (color[0] == "red")
+			transColor = "rgba(255,0,0,"+alpha+")";
+		else if (color[0] == "blue")
+			transColor = "rgba(0,0,255,"+alpha+")";
+		else if (color[0] == "purple") 
+			transColor = "rgba(128,0,128,"+alpha+")";
+		else if (color[0] == "cyan")
+			transColor = "rgba(0,255,255,"+alpha+")";
+		return transColor;
+	}
+	
+	private void initLDViewer() {
+		try
+		{
+			ldviewer.load(new Runnable() {
+				@Override
+				public void run() {
+					isLDViewerLoaded = true;
+					ldviewer.addUnhighlightHandler(new UnhighlightLDHandler() {
+						
+						@Override
+						public void onUnhighlight(UnhighlightLDEvent event) {
+							//clearSelection();
+							//scatterChart.setSelections(null);
+							//scatterChart.redraw();
+							DygraphOptions options = DygraphOptions.create();
+							//options.setFile(dataTable);
+							highlightedLDDataPoint = null;
+							highlightedLDDataPoints = null;
+							options.setColors(color);
+							scatterChart.getDygraphsJS().updateOptions(options);
+						}
+					});
+					ldviewer.addHighlightLDHandler(new HighlightLDHandler() {
+						
+						@Override
+						public void onHighlight(HighlightLDEvent event) {
+							LDDataPoint dataPoint = event.getLDDataPoint();
+							//DataView view = DataView.create(dataTable);
+							highlightedLDDataPoint = dataPoint;
+							highlightedLDDataPoints = null;
+							Selection selection = null;
+							//int[] rowsToFilter = new int[2];
+							/*int index = 0;
+							for (int i=0;i<dataTable.getNumberOfRows();i++) {
+								if (selections.length() == 2)
+									break;
+								if (dataTable.getValueInt(i, 0) == dataPoint.getPosX() || dataTable.getValueInt(i, 0) == dataPoint.getPosY()) {
+									selection = Selection.createRowSelection(i);
+									addSelection(selection);
+									//rowsToFilter[index] = i;
+									//index ++;
+								}
+							}*/
+							//view.setRows(rowsToFilter);
+							DygraphOptions options = DygraphOptions.create();
+							//options.setFile(view);
+							String[] colors = new String[1];
+							colors[0] = getTransparentColor();
+							options.setColors(colors);
+							scatterChart.getDygraphsJS().updateOptions(options);
+						}
+					});
+					
+					ldviewer.addMiddleMouseClickHandler(new MiddleMouseClickHandler() {
+						
+						@Override
+						public void onMiddleMouseClick(MiddleMouseClickEvent event) {
+							ldviewer.resetZoom();
+							setZoom(ldviewer.getZoomStart(),ldviewer.getZoomEnd());
+						}
+					});
+				}
+				
+			});
+		}
+		catch (Exception e)
+		{
+		}
 	}
 	
 	private void initGenomeView()
@@ -201,6 +331,24 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 		scatterChart.redraw();
 	}
 	
+	public void setZoom(int start, int end) {
+		if (end-start > minZoomLevelForGenomeView)
+			toggleGenomeViewVisible(false);
+		else 
+			toggleGenomeViewVisible(true);
+		if (isScatterChartLoaded)
+			scatterChart.setValueRangeX(start, end);
+		geneViewer.updateZoom(start, end);
+	}
+	
+	public void loadLDPlot(JsArrayInteger snps,
+			JsArray<JsArrayNumber> r2Values,int startRegion,int endRegion) {
+		toggleGenomeViewVisible(false);
+		ldviewer.setVisible(true);
+		ldviewer.onResize();
+		ldviewer.showLDValues(snps, r2Values, startRegion, endRegion);
+	}
+	
 	public void draw(DataTable dataTable,double max_value, int start,int end) {
 		draw(dataTable,max_value,start,end,-1);
 	}
@@ -226,6 +374,18 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 			
 			@Override
 			public void onZoom(ZoomEvent event) {
+				if (!ldviewer.isDataValid(event.minX, event.maxX)) {
+					ldviewer.setHighlightPosition(null);
+					ldviewer.setVisible(false);
+					DygraphOptions options = DygraphOptions.create();
+					highlightedLDDataPoint = null;
+					highlightedLDDataPoints = null;
+					options.setColors(color);
+					scatterChart.getDygraphsJS().updateOptions(options);
+				}
+				else {
+					ldviewer.setZoom(event.minX, event.maxX);
+				}
 				int zoomLength = event.maxX - event.minX;
 				if (zoomLength > viewEnd - viewStart)
 				{
@@ -246,17 +406,26 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 						toggleGenomeViewVisible(true);
 						geneViewer.updateZoom(event.minX, event.maxX);
 					}
-					else	
+					else	{
 						toggleGenomeViewVisible(false);
+					}
 				}
 			}
 		});
 		
 		scatterChart.addHighlightHandler(new HightlightHandler() {
 			
-			@Override
+				@Override
 			public void onHighlight(HighlightEvent event) {
 				geneViewer.setSelectionLine(event.xVal);
+				ldviewer.setHighlightPosition(event.xVal);
+				highlightedLDDataPoints = getHighlightedDataPointMap();
+				highlightedLDDataPoint = null;
+				if (ldviewer.isVisible()) {
+					int row = scatterChart.getDygraphsJS().getSelection();
+					scatterChart.redraw();
+					scatterChart.getDygraphsJS().setSelection(row, null);
+				}
 			}
 		});
 		
@@ -265,8 +434,16 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 			@Override
 			public void onUnhighlight(UnhighlightEvent event) {
 				geneViewer.hideSelectionLine();
+				ldviewer.setHighlightPosition(null);
+				highlightedLDDataPoints = null;
+				highlightedLDDataPoint = null;
+				if (ldviewer.isVisible()) {
+					scatterChart.getDygraphsJS().clearSelection();
+					scatterChart.redraw();
+				}
 			}
 		});
+		ldviewer.setVisible(false);
 	}
 	
 	protected void drawScatterChart()
@@ -274,6 +451,54 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 		chromosome_label.setText(chromosome);
 		DygraphOptions options = DygraphOptions.create();
 		options = setOptions(options);
+		if(GWT.isScript()) {
+			scatterChart.addDrawPointHandler(new DrawPointHandler() {
+				
+				@Override
+				public void onDrawPoint(DrawPointEvent event) {
+					event.canvas.setLineWidth(1);
+					String color = event.color;
+					if (ldviewer.isVisible()) {
+						if (highlightedLDDataPoints != null) {
+							int x = (int)scatterChart.getDygraphsJS().toDataXCoord(event.cx);
+							LDDataPoint point = highlightedLDDataPoints.get(x);
+							if (point != null) {
+								int hue =  point.getR2Color(threshold, maxColor);
+								color = "rgb(255,"+hue+",0)";
+							}
+							else
+								color = "blue";
+						}
+						else if (highlightedLDDataPoint != null){
+							int x = (int)scatterChart.getDygraphsJS().toDataXCoord(event.cx);
+							if (x == highlightedLDDataPoint.getPosX() || x == highlightedLDDataPoint.getPosY()) {
+								int hue =  highlightedLDDataPoint.getR2Color(threshold, maxColor);
+								color = "rgb(255,"+hue+",0)";
+								scatterChart.getDygraphsJS().drawDEFAULT(event.dygraph, event.seriesName, event.canvas, event.cx, event.cy, color, event.radius+2);
+								return;
+							}
+						}
+					}
+					scatterChart.getDygraphsJS().drawDEFAULT(event.dygraph, event.seriesName, event.canvas, event.cx, event.cy, color, event.radius);
+					//scatterChart.getDygraphsJS().drawPLUS(event.dygraph, event.seriesName, event.canvas, event.cx, event.cy, event.color, event.radius);
+				}
+			},options);
+			scatterChart.addDrawHighlightPointCallback(new DrawHighlightPointHandler() {
+				
+				@Override
+				public void onDrawHighlightPoint(DrawHighlightPointEvent event) {
+					String color = event.color;
+					if (ldviewer.isVisible() && highlightedLDDataPoints != null) {
+						int x = (int)scatterChart.getDygraphsJS().toDataXCoord(event.cx);
+						LDDataPoint point = highlightedLDDataPoints.get(x);
+						if (point != null) {
+							color = "rgb(255,0,0)";
+						}
+					}
+					scatterChart.getDygraphsJS().drawDEFAULT(event.dygraph, event.seriesName, event.canvas, event.cx, event.cy, color, event.radius);
+				}
+			},options);
+		}
 		scatterChart.addUnderlayHandler(new UnderlayHandler() {
 			
 			@Override
@@ -361,6 +586,19 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 		isScatterChartLoaded = true;
 	}
 	
+	private HashMap<Integer, LDDataPoint> getHighlightedDataPointMap() {
+		LDDataPoint[] dataPoints = ldviewer.getHighlightedDataPoints();
+		if (dataPoints != null) {
+			HashMap<Integer, LDDataPoint> map = new HashMap<Integer, LDDataPoint>();
+			for (int i = 0;i<dataPoints.length;i++) {
+				LDDataPoint point = dataPoints[i];
+				map.put(point.getPosX(), point);
+				map.put(point.getPosY(),point);
+			}
+			return map;
+		}
+		return null;
+	}
 	
 	protected DygraphOptions setOptions(DygraphOptions options){
 		double maxValue = max_value;
@@ -396,6 +634,8 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 				geneViewer.onResize();
 			}
 	}
+	
+	
 	
 	public void setMinZoomLevelForGenomeView(Integer minZoomLevelForGenomeView) {
 		this.minZoomLevelForGenomeView = minZoomLevelForGenomeView;
@@ -520,6 +760,7 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 		getElement().getStyle().setWidth(width, Unit.PX);
 		geneViewer.onResize();
 		scatterChart.onResize();
+		ldviewer.onResize();
 	}
 	
 	private void scheduledLayout() {

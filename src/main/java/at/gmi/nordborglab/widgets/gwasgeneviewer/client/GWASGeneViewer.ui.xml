@@ -2,24 +2,41 @@
 <ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
 	xmlns:g="urn:import:com.google.gwt.user.client.ui"
 	xmlns:dyg="urn:import:org.danvk.dygraphs.client"
-	xmlns:gview="urn:import:at.gmi.nordborglab.widgets.geneviewer.client">
+	xmlns:gview="urn:import:at.gmi.nordborglab.widgets.geneviewer.client"
+	xmlns:lview="urn:import:at.gmi.nordborglab.widgets.ldviewer.client">
 	<ui:style>
 		.genomeView {
       margin: 0px 5px 0px 0px; 
 	}
+	.ldViewer {
+	    margin-left:26px;
+	}
       .container {
           position:relative; 
 	  }
-    
-    
+	  .labelContainer {
+
+	}
 	</ui:style>
+	<ui:with field="mainRes" type="at.gmi.nordborglab.widgets.gwasgeneviewer.client.resources.MyResources" />
+	
 	<g:FlowPanel height="100%" width="100%" addStyleNames="{style.container}">
-		<g:HTMLPanel>
+		<g:FlowPanel addStyleNames="{style.labelContainer}">
+			<g:ToggleButton ui:field="settings_btn" addStyleNames="{mainRes.style.settingsButton}" />
 			<g:Label horizontalAlignment="ALIGN_LEFT" ui:field="chromosome_label"/>
-		</g:HTMLPanel>
+		</g:FlowPanel>
 		<dyg:Dygraphs ui:field="scatterChart" height="100%" width="100%"></dyg:Dygraphs>
 		<g:HTMLPanel ui:field="geneViewerContainer" visible="true">
 	  	   <gview:GeneViewer ui:field="geneViewer" visible="false" addStyleNames='{style.genomeView}'></gview:GeneViewer>
 	  	</g:HTMLPanel>
+	  	<g:HTMLPanel ui:field="ldViewerContainer" visible="true">
+	  	   <lview:LDViewer ui:field="ldviewer" visible="false" addStyleNames='{style.ldViewer}'></lview:LDViewer>
+	  	</g:HTMLPanel>
+	  	<g:PopupPanel ui:field="settings_popup" animationEnabled="true" addStyleNames="{mainRes.style.settingsPopup}">
+			<g:HTMLPanel addStyleNames="{mainRes.style.settingsContent}">
+				<div class="{mainRes.style.settingsContentTitle}">Settings:</div>
+				<g:HTMLPanel ui:field="track_container" />
+			</g:HTMLPanel>	
+		</g:PopupPanel>
 	</g:FlowPanel>
 </ui:UiBinder> 
