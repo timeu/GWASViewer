@@ -1,3 +1,6 @@
+June 18, 2012 - Release 0.4.9
+  * LDViewer (lib): Support for displaying genome wide ld and exact lds added. Some bugfixes
+
 June 11, 2012 - Release 0.4.8
   * LDViewer (lib): New LDViewer lib (Version 0.1.0) for visualization LD plots added
   * GeneViewer (lib): Updated to version 0.4.6
