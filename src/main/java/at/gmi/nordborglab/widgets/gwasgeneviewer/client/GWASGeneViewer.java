@@ -3,7 +3,6 @@ package at.gmi.nordborglab.widgets.gwasgeneviewer.client;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import org.danvk.dygraphs.client.DygraphOptions;
 import org.danvk.dygraphs.client.DygraphOptions.HighlightSeriesOptions;
@@ -113,6 +112,7 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 	protected LDDataPoint highlightedLDDataPoint = null;
 	protected double threshold = 0.3;
 	protected int maxColor = 255;
+	protected boolean isNotPairWise=false;
 	
 	//General settings
 	protected String chromosome;
@@ -122,8 +122,6 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 	protected int viewStart = 0;
 	protected int viewEnd = 0;
 	protected HashMap<Gene, DivElement> displayGenes = new HashMap<Gene, DivElement>();
-	
-	private static Logger logger = Logger.getLogger("at.gmi.nordborglab.widgets.gwasgeneviewer");
 
 	public GWASGeneViewer() {
 		initWidget();
@@ -343,7 +341,8 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 	
 	public void loadLDPlot(JsArrayInteger snps,
 			JsArray<JsArrayNumber> r2Values,int startRegion,int endRegion) {
-		toggleGenomeViewVisible(false);
+		setZoom(startRegion, endRegion);
+		isNotPairWise = false;
 		ldviewer.setVisible(true);
 		ldviewer.onResize();
 		ldviewer.showLDValues(snps, r2Values, startRegion, endRegion);
@@ -378,8 +377,10 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 					ldviewer.setHighlightPosition(null);
 					ldviewer.setVisible(false);
 					DygraphOptions options = DygraphOptions.create();
-					highlightedLDDataPoint = null;
-					highlightedLDDataPoints = null;
+					if (!isNotPairWise) {
+						highlightedLDDataPoint = null;
+						highlightedLDDataPoints = null;
+					}
 					options.setColors(color);
 					scatterChart.getDygraphsJS().updateOptions(options);
 				}
@@ -418,10 +419,10 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 				@Override
 			public void onHighlight(HighlightEvent event) {
 				geneViewer.setSelectionLine(event.xVal);
-				ldviewer.setHighlightPosition(event.xVal);
-				highlightedLDDataPoints = getHighlightedDataPointMap();
-				highlightedLDDataPoint = null;
 				if (ldviewer.isVisible()) {
+					ldviewer.setHighlightPosition(event.xVal);
+					highlightedLDDataPoints = getHighlightedDataPointMap();
+					highlightedLDDataPoint = null;
 					int row = scatterChart.getDygraphsJS().getSelection();
 					scatterChart.redraw();
 					scatterChart.getDygraphsJS().setSelection(row, null);
@@ -434,10 +435,10 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 			@Override
 			public void onUnhighlight(UnhighlightEvent event) {
 				geneViewer.hideSelectionLine();
-				ldviewer.setHighlightPosition(null);
-				highlightedLDDataPoints = null;
-				highlightedLDDataPoint = null;
 				if (ldviewer.isVisible()) {
+					ldviewer.setHighlightPosition(null);
+					highlightedLDDataPoints = null;
+					highlightedLDDataPoint = null;
 					scatterChart.getDygraphsJS().clearSelection();
 					scatterChart.redraw();
 				}
@@ -458,27 +459,26 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 				public void onDrawPoint(DrawPointEvent event) {
 					event.canvas.setLineWidth(1);
 					String color = event.color;
-					if (ldviewer.isVisible()) {
-						if (highlightedLDDataPoints != null) {
-							int x = (int)scatterChart.getDygraphsJS().toDataXCoord(event.cx);
-							LDDataPoint point = highlightedLDDataPoints.get(x);
-							if (point != null) {
-								int hue =  point.getR2Color(threshold, maxColor);
-								color = "rgb(255,"+hue+",0)";
-							}
-							else
-								color = "blue";
+					if (highlightedLDDataPoints != null) {
+						int x = (int)scatterChart.getDygraphsJS().toDataXCoord(event.cx);
+						LDDataPoint point = highlightedLDDataPoints.get(x);
+						if (point != null) {
+							int hue =  point.getR2Color(threshold, maxColor);
+							color = "rgb(255,"+hue+",0)";
 						}
-						else if (highlightedLDDataPoint != null){
-							int x = (int)scatterChart.getDygraphsJS().toDataXCoord(event.cx);
-							if (x == highlightedLDDataPoint.getPosX() || x == highlightedLDDataPoint.getPosY()) {
-								int hue =  highlightedLDDataPoint.getR2Color(threshold, maxColor);
-								color = "rgb(255,"+hue+",0)";
-								scatterChart.getDygraphsJS().drawDEFAULT(event.dygraph, event.seriesName, event.canvas, event.cx, event.cy, color, event.radius+2);
-								return;
-							}
+						else
+							color = "blue";
+					}
+					else if (highlightedLDDataPoint != null){
+						int x = (int)scatterChart.getDygraphsJS().toDataXCoord(event.cx);
+						if (x == highlightedLDDataPoint.getPosX() || x == highlightedLDDataPoint.getPosY()) {
+							int hue =  highlightedLDDataPoint.getR2Color(threshold, maxColor);
+							color = "rgb(255,"+hue+",0)";
+							scatterChart.getDygraphsJS().drawDEFAULT(event.dygraph, event.seriesName, event.canvas, event.cx, event.cy, color, event.radius+2);
+							return;
 						}
 					}
+					
 					scatterChart.getDygraphsJS().drawDEFAULT(event.dygraph, event.seriesName, event.canvas, event.cx, event.cy, color, event.radius);
 					//scatterChart.getDygraphsJS().drawPLUS(event.dygraph, event.seriesName, event.canvas, event.cx, event.cy, event.color, event.radius);
 				}
@@ -488,11 +488,19 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 				@Override
 				public void onDrawHighlightPoint(DrawHighlightPointEvent event) {
 					String color = event.color;
-					if (ldviewer.isVisible() && highlightedLDDataPoints != null) {
+					if (highlightedLDDataPoints != null) {
 						int x = (int)scatterChart.getDygraphsJS().toDataXCoord(event.cx);
 						LDDataPoint point = highlightedLDDataPoints.get(x);
 						if (point != null) {
-							color = "rgb(255,0,0)";
+							if (isNotPairWise) {
+								int hue =  point.getR2Color(threshold, maxColor);
+								color = "rgb(255,"+hue+",0)";
+							}
+							else
+								color = "rgb(255,0,0)";
+						}
+						else if (isNotPairWise) {
+								color = "blue";
 						}
 					}
 					scatterChart.getDygraphsJS().drawDEFAULT(event.dygraph, event.seriesName, event.canvas, event.cx, event.cy, color, event.radius);
@@ -592,12 +600,39 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 			HashMap<Integer, LDDataPoint> map = new HashMap<Integer, LDDataPoint>();
 			for (int i = 0;i<dataPoints.length;i++) {
 				LDDataPoint point = dataPoints[i];
-				map.put(point.getPosX(), point);
+				map.put(point.getPosX(),point);
 				map.put(point.getPosY(),point);
 			}
 			return map;
 		}
 		return null;
+	}
+	
+	protected void setHighlightedDataPoints(int position,JsArrayInteger snps,JsArrayNumber r2Values)  {
+		highlightedLDDataPoints = new HashMap<Integer, LDDataPoint>();
+		for (int i = 0; i <r2Values.length() ; i++) {
+              LDDataPoint dataPoint = LDDataPoint.createObject().cast();
+              dataPoint.setR2(r2Values.get(i));
+              dataPoint.setPosX(snps.get(i));
+              if (dataPoint.getR2() > threshold)
+            	  highlightedLDDataPoints.put(dataPoint.getPosX(), dataPoint);
+        }
+		
+	}
+	
+	public void showColoredLDValues(int position,JsArrayInteger snps,JsArrayNumber r2Values) {
+		isNotPairWise  = true;
+		setHighlightedDataPoints(position, snps, r2Values);
+		ldviewer.setVisible(false);
+	}
+	
+	public void hideColoredLDValues() {
+		highlightedLDDataPoints = null;
+		highlightedLDDataPoint = null;
+		if (isNotPairWise) {
+			isNotPairWise = false;
+			refresh();
+		}
 	}
 	
 	protected DygraphOptions setOptions(DygraphOptions options){
