@@ -1,3 +1,8 @@
+October 4, 2012 - Release 0.4.10
+  * LDViewer (lib): Version updated to 0.1.2
+  * pom.xml: GWT version updated to 2.5.0-rc2
+  * GeneViewer (lib): Version updated to 0.4.7
+
 June 18, 2012 - Release 0.4.9
   * LDViewer (lib): Support for displaying genome wide ld and exact lds added. Some bugfixes
 
