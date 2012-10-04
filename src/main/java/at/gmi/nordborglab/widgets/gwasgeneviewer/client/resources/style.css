@@ -42,7 +42,7 @@
 	font-size: 13px;
 }
 
-.settingsContent a,a:visited,a:hover {
+.settingsContent a,.settingsContent a:visited, .settingsContent a:hover {
       text-decoration: none;
       color:#333333;
       cursor: pointer;
