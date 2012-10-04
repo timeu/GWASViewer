@@ -1,3 +1,6 @@
+October 5, 2012 - Release 0.4.11
+  * GeneViewer (lib): Version updated to 0.4.8
+
 October 4, 2012 - Release 0.4.10
   * LDViewer (lib): Version updated to 0.1.2
   * pom.xml: GWT version updated to 2.5.0-rc2
