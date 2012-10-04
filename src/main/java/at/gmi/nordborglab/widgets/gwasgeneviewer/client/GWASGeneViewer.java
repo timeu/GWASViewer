@@ -92,7 +92,7 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 	protected DataTable dataTable;
 	protected boolean isScatterChartLoaded = false;
 	protected int snpPosX = -1;
-	protected double bonferroniThreshold = -1 ;
+	protected double pvalThreshold = -1 ;
 	
 	// use instance because getSelection() does not work in onUnderlay event, because date_graph is not properly initialized
 	protected JsArray<Selection> selections =JsArray.createArray().cast(); 
@@ -352,13 +352,13 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 		draw(dataTable,max_value,start,end,-1);
 	}
 	
-	public void draw(DataTable dataTable,double max_value, int start,int end,double bonferroniThreshold)
+	public void draw(DataTable dataTable,double max_value, int start,int end,double pvalThreshold)
 	{
 		this.dataTable = dataTable;
 		this.max_value = max_value;
 		this.viewStart = start;
 		this.viewEnd = end;
-		this.bonferroniThreshold = bonferroniThreshold;
+		this.pvalThreshold = pvalThreshold;
 		geneViewer.setViewRegion(start,end);
 		geneViewer.setChromosome(chromosome);
 		geneViewer.setDataSource(datasource);
@@ -561,8 +561,8 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 					}
 				}
 				
-				if (bonferroniThreshold != -1) {
-					double posY = (int)event.dygraph.toDomYCoord(bonferroniThreshold, 0)-0.5;
+				if (pvalThreshold != -1) {
+					double posY = (int)event.dygraph.toDomYCoord(pvalThreshold, 0)-0.5;
 					int width = ctx.getCanvas().getWidth();
 					ctx.save();
 					ctx.beginPath();
@@ -637,8 +637,8 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 	
 	protected DygraphOptions setOptions(DygraphOptions options){
 		double maxValue = max_value;
-		if (maxValue < bonferroniThreshold)
-			maxValue = bonferroniThreshold;
+		if (maxValue < pvalThreshold)
+			maxValue = pvalThreshold;
 		options.setStrokeWidth(0.000000001);
 		options.setDrawPoints(true);
 		options.setPointSize(pointSize);
@@ -808,5 +808,9 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 	public void destroy() {
 		scatterChart.destroy();
 		geneViewer.destroy();
+	}
+	
+	public void setUploadGenomeStatsFormUrl(String url,String urlParameters) {
+		geneViewer.setUploadGenomeStatsFormUrl(url,urlParameters);
 	}
 }
