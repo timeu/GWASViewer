@@ -4,6 +4,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.gwt.ajaxloader.client.Properties;
+import com.google.gwt.dom.client.SpanElement;
+import com.google.gwt.dom.client.Style;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.uibinder.client.UiHandler;
+import com.google.gwt.user.client.ui.*;
+import com.google.gwt.visualization.client.DataView;
+import com.google.gwt.visualization.client.Range;
 import org.danvk.dygraphs.client.DygraphOptions;
 import org.danvk.dygraphs.client.DygraphOptions.HighlightSeriesOptions;
 import org.danvk.dygraphs.client.Dygraphs;
@@ -47,13 +56,6 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.HTMLPanel;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.PopupPanel;
-import com.google.gwt.user.client.ui.RequiresResize;
-import com.google.gwt.user.client.ui.ToggleButton;
-import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.Selection;
 
@@ -61,8 +63,13 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 
 	private static ScatterGenomeChartUiBinder uiBinder = GWT
 			.create(ScatterGenomeChartUiBinder.class);
-	
-	interface ScatterGenomeChartUiBinder extends UiBinder<Widget, GWASGeneViewer> {	}
+    private DataView filteredView;
+
+    interface ScatterGenomeChartUiBinder extends UiBinder<Widget, GWASGeneViewer> {	}
+
+    public interface FilterChangeHandler {
+        void onChange();
+    }
 
 	@UiField Dygraphs scatterChart;
 	@UiField HTMLPanel geneViewerContainer;
@@ -72,7 +79,45 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 	@UiField ToggleButton settings_btn;
 	@UiField PopupPanel settings_popup;
 	@UiField(provided=true) MyResources mainRes;
-	
+    @UiField
+    TextBox macTb;
+    @UiField
+    TextBox mafTb;
+    @UiField(provided=true)
+    SimpleRadioButton mafRd;
+    @UiField(provided=true)
+    SimpleRadioButton macRd;
+    @UiField
+    SpanElement macValue;
+    @UiField
+    SpanElement mafValue;
+    @UiField
+    SpanElement macLb;
+    @UiField
+    SpanElement mafLb;
+    @UiField
+    DivElement macContainer;
+    @UiField
+    DivElement mafContainer;
+    @UiField
+    TabPanel settingsTabPanel;
+    @UiField
+    Anchor defaultFilterBtn;
+    @UiField
+    SpanElement displayAllLb;
+    @UiField(provided=true)
+    SimpleRadioButton showAllRd;
+    @UiField(provided=true)
+    SimpleRadioButton showSynRd;
+    @UiField
+    SpanElement displaySynLb;
+    @UiField(provided=true)
+    SimpleRadioButton showNonSynRd;
+    @UiField
+    SpanElement displayNonSynLb;
+    @UiField
+    SimpleCheckBox showInGenes;
+
     private final ScheduledCommand layoutCmd = new ScheduledCommand() {
     	public void execute() {
     		layoutScheduled = false;
@@ -88,6 +133,7 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 	
 	protected String gene_marker_color;
 	protected int pointSize =2;
+    protected int highlightCircleSize = 4;
 	protected int scatterChartHeight=200;
 	protected DataTable dataTable;
 	protected boolean isScatterChartLoaded = false;
@@ -100,6 +146,7 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 	
 	protected SelectHandler selectHandler=null;
 	protected ClickGeneHandler clickGeneHandler = null;
+    protected FilterChangeHandler filterChangeHandler = null;
 	
 	//GenomeView settings
 	protected Integer minZoomLevelForGenomeView = 1500000;
@@ -122,6 +169,13 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 	protected int viewStart = 0;
 	protected int viewEnd = 0;
 	protected HashMap<Gene, DivElement> displayGenes = new HashMap<Gene, DivElement>();
+    protected double minMAC = 15;
+    protected double minMAF = 0.1;
+    public static enum MINOR_FILTER {NO,MAC,MAF};
+    public static enum DISPLAY_FILTER {ALL,SYNONYMOUS,NONSYNONYMOUS};
+    protected DISPLAY_FILTER displayFilter = DISPLAY_FILTER.ALL;
+    protected MINOR_FILTER minorFilter = MINOR_FILTER.NO;
+    protected DygraphOptions scatterChartOptions;
 
 	public GWASGeneViewer() {
 		initWidget();
@@ -143,7 +197,17 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 	private void initWidget() {
 		mainRes = GWT.create(MyResources.class);
 		mainRes.style().ensureInjected();
+        macRd = new SimpleRadioButton("filterType");
+        mafRd = new SimpleRadioButton("filterType");
+        showAllRd = new SimpleRadioButton("displayType");
+        showSynRd = new SimpleRadioButton("displayType");
+        showNonSynRd = new SimpleRadioButton("displayType");
 		initWidget(uiBinder.createAndBindUi(this));
+        macValue.setInnerText(String.valueOf(minMAC));
+        mafValue.setInnerText(String.valueOf(minMAF));
+        macTb.getElement().setAttribute("type","range");
+        mafTb.getElement().setAttribute("type","range");
+        mafTb.getElement().setAttribute("step","0.01");
 		settings_popup.removeFromParent();
 		settings_popup.setAnimationEnabled(true);
 		settings_btn.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
@@ -156,6 +220,8 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 					settings_popup.showRelativeTo(settings_btn);
 			}
 		});
+        updateFilterControls();
+        settingsTabPanel.selectTab(0);
 	}
 	
 	@Override
@@ -397,10 +463,10 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 				{
 					
 					//Bugfix for http://code.google.com/p/dygraphs/issues/detail?id=280&thanks=280&ts=1328714824
-					if (event.minX < 0)
+					/*if (event.minX < 0)
 						scatterChart.setValueRangeX(0, event.maxX);
 					else if (event.maxX > viewEnd)  
-						scatterChart.setValueRangeX(event.minX, viewEnd);
+						scatterChart.setValueRangeX(event.minX, viewEnd);*/
 					
 					if (event.maxX - event.minX<= minZoomLevelForGenomeView)
 					{
@@ -408,6 +474,8 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 						geneViewer.updateZoom(event.minX, event.maxX);
 					}
 					else	{
+                        //Bugfix: if the valueRange is not set when filtering values (based on MAC for example) the range get changed automatically.
+                        scatterChart.setValueRangeX(event.minX,event.maxX);
 						toggleGenomeViewVisible(false);
 					}
 				}
@@ -450,8 +518,8 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 	protected void drawScatterChart()
 	{
 		chromosome_label.setText(chromosome);
-		DygraphOptions options = DygraphOptions.create();
-		options = setOptions(options);
+		scatterChartOptions = DygraphOptions.create();
+        scatterChartOptions = setOptions(scatterChartOptions);
 		if(GWT.isScript()) {
 			scatterChart.addDrawPointHandler(new DrawPointHandler() {
 				
@@ -478,34 +546,65 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 							return;
 						}
 					}
-					
-					scatterChart.getDygraphsJS().drawDEFAULT(event.dygraph, event.seriesName, event.canvas, event.cx, event.cy, color, event.radius);
-					//scatterChart.getDygraphsJS().drawPLUS(event.dygraph, event.seriesName, event.canvas, event.cx, event.cy, event.color, event.radius);
+                    else {
+                        int idx = event.idx;
+                        int annotationColIdx = dataTable.getColumnIndex("annotation");
+                        if ( annotationColIdx>= 0) {
+                            String annotation = dataTable.getValueString(filteredView.getTableRowIndex(idx),annotationColIdx);
+                            if ("NS".equalsIgnoreCase(annotation)) {
+                                 //scatterChart.getDygraphsJS().drawTRIANGLE(event.dygraph, event.seriesName, event.canvas, event.cx, event.cy, color, event.radius);
+                                 scatterChart.getDygraphsJS().drawTRIANGLE(event.dygraph, event.seriesName, event.canvas, event.cx, event.cy, event.color, 3);
+                                 return;
+                            }
+                            else if ("S".equalsIgnoreCase(annotation)) {
+                                 scatterChart.getDygraphsJS().drawSQUARE(event.dygraph, event.seriesName, event.canvas, event.cx, event.cy, color, 3);
+                                 return;
+                            }
+                        }
+                    }
+				    //scatterChart.getDygraphsJS().drawDEFAULT(event.dygraph, event.seriesName, event.canvas, event.cx, event.cy, color, event.radius);
+					scatterChart.getDygraphsJS().drawCIRCLE(event.dygraph, event.seriesName, event.canvas, event.cx, event.cy, event.color, 2);
 				}
-			},options);
+			},scatterChartOptions);
 			scatterChart.addDrawHighlightPointCallback(new DrawHighlightPointHandler() {
-				
-				@Override
-				public void onDrawHighlightPoint(DrawHighlightPointEvent event) {
-					String color = event.color;
-					if (highlightedLDDataPoints != null) {
-						int x = (int)scatterChart.getDygraphsJS().toDataXCoord(event.cx);
-						LDDataPoint point = highlightedLDDataPoints.get(x);
-						if (point != null) {
-							if (isNotPairWise) {
-								int hue =  point.getR2Color(threshold, maxColor);
-								color = "rgb(255,"+hue+",0)";
-							}
-							else
-								color = "rgb(255,0,0)";
-						}
-						else if (isNotPairWise) {
-								color = "blue";
-						}
-					}
-					scatterChart.getDygraphsJS().drawDEFAULT(event.dygraph, event.seriesName, event.canvas, event.cx, event.cy, color, event.radius);
-				}
-			},options);
+
+                @Override
+                public void onDrawHighlightPoint(DrawHighlightPointEvent event) {
+                    event.canvas.setLineWidth(1);
+                    String color = event.color;
+                    if (highlightedLDDataPoints != null) {
+                        int x = (int) scatterChart.getDygraphsJS().toDataXCoord(event.cx);
+                        LDDataPoint point = highlightedLDDataPoints.get(x);
+                        if (point != null) {
+                            if (isNotPairWise) {
+                                int hue = point.getR2Color(threshold, maxColor);
+                                color = "rgb(255," + hue + ",0)";
+                            } else
+                                color = "rgb(255,0,0)";
+                        } else if (isNotPairWise) {
+                            color = "blue";
+                        }
+                    }
+                    else {
+                        int idx = event.idx;
+                        int annotationColIdx = dataTable.getColumnIndex("annotation");
+                        if ( annotationColIdx>= 0) {
+                            String annotation = dataTable.getValueString(filteredView.getTableRowIndex(idx),annotationColIdx);
+                            if ("NS".equalsIgnoreCase(annotation)) {
+                                //scatterChart.getDygraphsJS().drawTRIANGLE(event.dygraph, event.seriesName, event.canvas, event.cx, event.cy, color, event.radius);
+                                scatterChart.getDygraphsJS().drawTRIANGLE(event.dygraph, event.seriesName, event.canvas, event.cx, event.cy, event.color, 5);
+                                return;
+                            }
+                            else if ("S".equalsIgnoreCase(annotation)) {
+                                scatterChart.getDygraphsJS().drawSQUARE(event.dygraph, event.seriesName, event.canvas, event.cx, event.cy, color, 5);
+                                return;
+                            }
+                        }
+                    }
+                    scatterChart.getDygraphsJS().drawCIRCLE(event.dygraph, event.seriesName, event.canvas, event.cx, event.cy, event.color, 4);
+                    //scatterChart.getDygraphsJS().drawDEFAULT(event.dygraph, event.seriesName, event.canvas, event.cx, event.cy, color, event.radius);
+                }
+            }, scatterChartOptions);
 		}
 		scatterChart.addUnderlayHandler(new UnderlayHandler() {
 			
@@ -574,7 +673,7 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 				}
 			}
 				
-		},options);
+		},scatterChartOptions);
 		scatterChart.setID(chromosome);
 		if (snpPosX > -1) {
 			Selection selection = null;
@@ -586,13 +685,91 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 			}
 			selections.set(0, selection);
 		}
-		scatterChart.draw(dataTable,setOptions(options));
+
+        initFilterControls();
+        scatterChart.draw(getFilteredView(),scatterChartOptions);
 		//if (selections.length() > 0)
 		scatterChart.setSelections(selections);
 		
 		//scatterChart.setSelections()
 		isScatterChartLoaded = true;
 	}
+
+    public void filterAndDraw() {
+        scatterChart.getDygraphsJS().updateData(getFilteredView());
+    }
+
+    private DataView getFilteredView() {
+        if (dataTable == null)
+            return null;
+        filteredView = DataView.create(dataTable);
+        JsArray<Properties> filter = JsArray.createArray().cast();
+        Properties minorfilterProperty = Properties.create();
+        Properties displayfilterProperty = Properties.create();
+        if (minorFilter != null ) {
+            switch (minorFilter) {
+                case MAC:
+                    minorfilterProperty.set("column", (double)dataTable.getColumnIndex("mac"));
+                    minorfilterProperty.set("minValue", minMAC);
+                    break;
+                case MAF:
+                    minorfilterProperty.set("column", (double)dataTable.getColumnIndex("maf"));
+                    minorfilterProperty.set("minValue", minMAF);
+                    break;
+                default:
+                    minorfilterProperty = null;
+                    break;
+            }
+        }
+        if (minorfilterProperty != null) {
+            filter.set(0,minorfilterProperty);
+        }
+        if (displayFilter != null) {
+            switch (displayFilter) {
+                case SYNONYMOUS:
+                    displayfilterProperty.set("column", (double)dataTable.getColumnIndex("annotation"));
+                    displayfilterProperty.set("value", "S");
+                    break;
+                case NONSYNONYMOUS:
+                    displayfilterProperty.set("column", (double)dataTable.getColumnIndex("annotation"));
+                    displayfilterProperty.set("value", "NS");
+                    break;
+                default:
+                    displayfilterProperty = null;
+                    break;
+            }
+        }
+        if (displayfilterProperty != null) {
+            filter.set(filter.length(),displayfilterProperty);
+        }
+
+        if (showInGenes.getValue()) {
+            Properties inGeneFilter = Properties.create();
+            inGeneFilter.set("column",(double)dataTable.getColumnIndex("inGene"));
+            inGeneFilter.set("value",true);
+            filter.set(filter.length(),inGeneFilter);
+        }
+        if (filter.length() > 0) {
+            filteredView.setRows(CustomDataView.getFilteredRows(filteredView, filter));
+        }
+        filteredView.setColumns(new int[]{0, 1});
+        updateFilterCountLables();
+        return filteredView;
+    }
+
+    private void updateFilterCountLables() {
+        int count = filteredView.getNumberOfRows();
+        switch (displayFilter) {
+            case NONSYNONYMOUS:
+                displayNonSynLb.setInnerText("# "+count);
+                break;
+            case SYNONYMOUS:
+                displaySynLb.setInnerText("# "+count);
+                break;
+            default:
+                displayAllLb.setInnerText("# "+count);
+        }
+    }
 	
 	private HashMap<Integer, LDDataPoint> getHighlightedDataPointMap() {
 		LDDataPoint[] dataPoints = ldviewer.getHighlightedDataPoints();
@@ -642,6 +819,7 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 		options.setStrokeWidth(0.000000001);
 		options.setDrawPoints(true);
 		options.setPointSize(pointSize);
+        options.setHighlightCircleSize(highlightCircleSize);
 		options.setIncludeZero(true);
 		options.setYlabel("-log10(p)");
 		options.setYLabelWidth(13.0);
@@ -813,4 +991,151 @@ public class GWASGeneViewer extends Composite implements RequiresResize{
 	public void setUploadGenomeStatsFormUrl(String url,String urlParameters) {
 		geneViewer.setUploadGenomeStatsFormUrl(url,urlParameters);
 	}
+
+    private void updateFilterControls() {
+        macTb.setEnabled(minorFilter == MINOR_FILTER.MAC);
+        mafTb.setEnabled(minorFilter == MINOR_FILTER.MAF);
+        macLb.getStyle().setColor(minorFilter == MINOR_FILTER.MAC ? "black" : "#ccc");
+        mafLb.getStyle().setColor(minorFilter == MINOR_FILTER.MAF ? "black" : "#ccc");
+
+        macRd.setValue(minorFilter == MINOR_FILTER.MAC);
+        mafRd.setValue(minorFilter == MINOR_FILTER.MAF);
+
+        if (showNonSynRd.getValue()) {
+            displayFilter = DISPLAY_FILTER.NONSYNONYMOUS;
+        }
+        else if (showSynRd.getValue()) {
+            displayFilter = DISPLAY_FILTER.SYNONYMOUS;
+        }
+        else {
+            displayFilter = DISPLAY_FILTER.ALL;
+        }
+    }
+
+    private void updateFilterValues() {
+        macValue.setInnerText(String.valueOf(minMAC));
+        mafValue.setInnerText(String.valueOf(minMAF));
+    }
+
+    private void initFilterControls() {
+
+        if (dataTable.getColumnIndex("maf") >=0) {
+            Range range = dataTable.getColumnRange(3);
+            mafTb.getElement().setAttribute("min",String.valueOf(range.getMin()));
+            mafTb.getElement().setAttribute("max",String.valueOf(range.getMax()));
+            mafContainer.getStyle().setDisplay(Style.Display.BLOCK);
+            minorFilter = MINOR_FILTER.MAF;
+        }
+        else {
+            mafContainer.getStyle().setDisplay(Style.Display.NONE);
+        }
+        if (dataTable.getColumnIndex("mac")>=0) {
+            Range range = dataTable.getColumnRange(2);
+            macTb.getElement().setAttribute("min",String.valueOf(range.getMin()));
+            macTb.getElement().setAttribute("max",String.valueOf(range.getMax()));
+            macContainer.getStyle().setDisplay(Style.Display.BLOCK);
+
+            if (minorFilter != MINOR_FILTER.MAF) {
+                minorFilter = MINOR_FILTER.MAC;
+            }
+        }
+        else {
+            macContainer.getStyle().setDisplay(Style.Display.NONE);
+        }
+        updateFilterValues();
+        updateFilterControls();
+    }
+
+    @UiHandler({"macRd","mafRd"})
+    public void onClickFilterType(ClickEvent event) {
+        minorFilter = mafRd.getValue() ? MINOR_FILTER.MAF : MINOR_FILTER.MAC;
+        updateFilterControls();
+        filterAndDraw();
+        if (filterChangeHandler != null) {
+            filterChangeHandler.onChange();
+        }
+    }
+
+    @UiHandler({"showSynRd","showNonSynRd","showAllRd","showInGenes"})
+    public void onClickDisplayFilterType(ClickEvent e) {
+        updateFilterControls();
+        filterAndDraw();
+    }
+
+    public void setFilterType(MINOR_FILTER filterType) {
+        if (minorFilter != filterType) {
+            minorFilter = filterType;
+            updateFilterControls();
+        }
+    }
+
+    public void setMinMAF(double maf) {
+        this.minMAF = maf;
+        mafTb.setText(String.valueOf(minMAF));
+        updateFilterValues();
+        updateFilterControls();
+    }
+
+    public void setMinMAC(double mac) {
+        this.minMAC = mac;
+        macTb.setText(String.valueOf(minMAC));
+        updateFilterValues();
+        updateFilterControls();
+    }
+
+
+    @UiHandler("macTb")
+    public void onChangeMACTb(ValueChangeEvent<String> event) {
+        try {
+            minMAC = Double.parseDouble(event.getValue());
+            updateFilterValues();
+            filterAndDraw();
+            if (filterChangeHandler != null) {
+                filterChangeHandler.onChange();
+            }
+        }
+        catch (Exception e ) {}
+    }
+
+    @UiHandler("mafTb")
+    public void onChangeMAFTb(ValueChangeEvent<String> event) {
+        try {
+            minMAF = Double.parseDouble(event.getValue());
+            updateFilterValues();
+            filterAndDraw();
+            if (filterChangeHandler != null) {
+                filterChangeHandler.onChange();
+            }
+        }
+        catch (Exception e ) {}
+    }
+
+    @UiHandler("defaultFilterBtn")
+    public void onClickDefaultFilterBtn(ClickEvent e) {
+        minMAC = 15;
+        minMAF = 0.1;
+        macTb.setText(String.valueOf(minMAC));
+        mafTb.setText(String.valueOf(minMAF));
+        updateFilterValues();
+        updateFilterControls();
+        filterAndDraw();
+    }
+
+    public void setFilterChangeHandler(FilterChangeHandler handler){
+       this.filterChangeHandler = handler;
+    }
+
+    public double getMinMAF() {
+        return minMAF;
+    }
+
+    public double getMinMAC() {
+        return minMAC;
+    }
+
+    public MINOR_FILTER getFilterType() {
+        return minorFilter;
+    }
+
+
 }

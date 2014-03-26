@@ -5,19 +5,34 @@
 	xmlns:gview="urn:import:at.gmi.nordborglab.widgets.geneviewer.client"
 	xmlns:lview="urn:import:at.gmi.nordborglab.widgets.ldviewer.client">
 	<ui:style>
-		.genomeView {
-      margin: 0px 5px 0px 0px; 
-	}
-	.ldViewer {
-	    margin-left:26px;
-	}
-      .container {
-          position:relative; 
-	  }
-	  .labelContainer {
+        .genomeView {
+            margin: 0px 5px 0px 0px;
+        }
 
-	}
-	</ui:style>
+        .ldViewer {
+            margin-left: 26px;
+        }
+
+        .container {
+            position: relative;
+        }
+
+        .labelContainer {
+        }
+
+        .hr {
+            margin: 0;
+            margin-bottom: 2px;
+        }
+
+        .defaultFilterBtn {
+            color: #0088cc;
+            text-decoration: none;
+            font-weight:normal;
+        }
+
+
+    </ui:style>
 	<ui:with field="mainRes" type="at.gmi.nordborglab.widgets.gwasgeneviewer.client.resources.MyResources" />
 	
 	<g:FlowPanel height="100%" width="100%" addStyleNames="{style.container}">
@@ -34,7 +49,53 @@
 	  	</g:HTMLPanel>
 	  	<g:PopupPanel ui:field="settings_popup" animationEnabled="true" addStyleNames="{mainRes.style.settingsPopup}">
 			<g:HTMLPanel addStyleNames="{mainRes.style.settingsContent}">
-				<div class="{mainRes.style.settingsContentTitle}">Settings:</div>
+				<h4>Settings:</h4>
+                <hr class="{style.hr}"/>
+                <g:TabPanel ui:field="settingsTabPanel">
+                    <g:Tab text="Filters" >
+                    <g:HTMLPanel>
+                        <div ui:field="filterContainer">
+                             <h5>Filter [<g:Anchor addStyleNames="{style.defaultFilterBtn}" ui:field="defaultFilterBtn">Default</g:Anchor>]:</h5>
+                            <hr class="{style.hr}"/>
+                             <div ui:field="macContainer">
+                                 <g:SimpleRadioButton ui:field="macRd" name="filterType" value="false"/>
+                                 <span ui:field="macLb">MAC [<span ui:field="macValue"></span>]</span>
+                                 <g:TextBox ui:field="macTb" width="150px"></g:TextBox>
+                             </div>
+                             <div ui:field="mafContainer">
+                                 <g:SimpleRadioButton ui:field="mafRd" name="filterType" value="true" />
+                                 <span ui:field="mafLb">MAF [<span ui:field="mafValue"></span>]</span>
+                                 <g:TextBox ui:field="mafTb" width="150px"></g:TextBox>
+                             </div>
+                        </div>
+                    </g:HTMLPanel>
+                    </g:Tab>
+                    <g:Tab text="Display">
+                        <g:HTMLPanel>
+                            <div >
+                            <h5>Display:</h5>
+                            <hr class="{style.hr}"/>
+                            <div >
+                                <g:SimpleRadioButton ui:field="showAllRd" name="displayType" value="true"/>
+                                <span >All [<span ui:field="displayAllLb"></span>]</span>
+                            </div>
+                            <div >
+                                <g:SimpleRadioButton ui:field="showSynRd" name="displayType" />
+                                <span >Synonymous [<span ui:field="displaySynLb"></span>]</span>
+                            </div>
+                                <div >
+                                    <g:SimpleRadioButton ui:field="showNonSynRd" name="displayType" />
+                                    <span >Non-Synonymous [<span ui:field="displayNonSynLb"></span>]</span>
+                                </div>
+                                <div >
+                                    <g:SimpleCheckBox ui:field="showInGenes" />
+                                    <span >Only in genes?</span>
+                                </div>
+
+                        </div>
+                        </g:HTMLPanel>
+                    </g:Tab>
+                </g:TabPanel>
 				<g:HTMLPanel ui:field="track_container" />
 			</g:HTMLPanel>	
 		</g:PopupPanel>

@@ -27,6 +27,7 @@
 	clip:auto !important;
 	padding: 0 0 6px;
 	z-index:99;
+    opacity:0.95;
 }
 
 @sprite .settingsButton {
@@ -40,6 +41,7 @@
 	padding:0;
 	font-family: arial,sans-serif;
 	font-size: 13px;
+    padding:6px 8px;
 }
 
 .settingsContent a,.settingsContent a:visited, .settingsContent a:hover {
@@ -50,7 +52,7 @@
 }
 
 .settingsContentTitle {
-	padding:6px 8px;
+
 }
 
 /**@sprite .settingsContentItemChecked {

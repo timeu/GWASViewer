@@ -1,3 +1,5 @@
+ * Support for showing annotations and filtering by MAC/MAF added
+
 October 4, 2012 - Release 0.4.12
  * GeneViewer (lib): Version updated to 0.4.9
  * LDViewer (lib): Version updated to 0.1.3
