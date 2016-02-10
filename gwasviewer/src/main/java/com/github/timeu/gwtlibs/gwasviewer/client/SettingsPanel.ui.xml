@@ -1,0 +1,113 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+             xmlns:g="urn:import:com.google.gwt.user.client.ui">
+
+    <ui:with field="mainRes" type="com.github.timeu.gwtlibs.gwasviewer.client.resources.Resources" />
+    <ui:style>
+        .hr {
+            margin: 0;
+            margin-bottom: 2px;
+        }
+
+        .defaultFilterBtn {
+            color: #0088cc;
+            text-decoration: none;
+            font-weight:normal;
+        }
+        .symbol_nonsyn {
+            font-size:20px;
+        }
+        .symbol_syn {
+           font-size:17px;
+        }
+    </ui:style>
+
+    <g:HTMLPanel addStyleNames="{mainRes.style.settingsContent}">
+        <h4>Settings</h4>
+        <hr class="{style.hr}"/>
+        <g:TabPanel ui:field="settingsTabPanel">
+            <g:Tab text="Filters" >
+                <g:HTMLPanel>
+                    <div ui:field="filterContainer">
+                        <h4>Filter [<g:Anchor addStyleNames="{style.defaultFilterBtn}" ui:field="defaultFilterBtn">Default</g:Anchor>]:</h4>
+                        <hr class="{style.hr}"/>
+                        <div ui:field="macContainer">
+                            <div>
+                                <g:SimpleRadioButton ui:field="macRd" name="filterType" value="false"/>
+                                <span ui:field="macLb">MAC [<span ui:field="macValue"></span>]</span>
+                            </div>
+                            <g:TextBox ui:field="macTb" width="150px"></g:TextBox>
+                        </div>
+                        <div ui:field="mafContainer">
+                            <div>
+                                <g:SimpleRadioButton ui:field="mafRd" name="filterType" value="false" />
+                                <span ui:field="mafLb">MAF [<span ui:field="mafValue"></span>]</span>
+                            </div>
+                            <g:TextBox ui:field="mafTb" width="150px"></g:TextBox>
+                        </div>
+                        <div>
+                            <g:SimpleRadioButton ui:field="noMaFilter" name="filterType" value="true" />
+                            <span ui:field="noFilterLb">No Filter</span>
+                        </div>
+                    </div>
+                </g:HTMLPanel>
+            </g:Tab>
+            <g:Tab text="Display">
+                <g:HTMLPanel>
+                    <div >
+                        <h4>Display:</h4>
+                        <hr class="{style.hr}"/>
+                        <div >
+                            <g:SimpleRadioButton ui:field="showAllRd" name="displayType" value="true"/>
+                            <span >All [<span class="{style.symbol_nonsyn}">&#9653;</span><span class="{style.symbol_syn}">&#9725;</span>: <span ui:field="displayAllLb"></span>]</span>
+                        </div>
+                        <div >
+                            <g:SimpleRadioButton ui:field="showSynRd" name="displayType" />
+                            <span >Synonymous [<span class="{style.symbol_syn}">&#9725;</span>:<span ui:field="displaySynLb"></span>]</span>
+                        </div>
+                        <div>
+                            <g:SimpleRadioButton ui:field="showNonSynRd" name="displayType" />
+                            <span >Non-Synonymous [<span class="{style.symbol_nonsyn}">&#9653;</span>: <span ui:field="displayNonSynLb"></span>]</span>
+                        </div>
+                        <div >
+                            <g:SimpleCheckBox ui:field="showInGenes" />
+                            <span >Only in genes?</span>
+                        </div>
+
+                    </div>
+                </g:HTMLPanel>
+            </g:Tab>
+            <g:Tab text="Color">
+                <g:HTMLPanel>
+                    <div >
+                        <h4>Color:</h4>
+                        <hr class="{style.hr}"/>
+                        <div >
+                            <g:SimpleRadioButton ui:field="standardColorRd" name="colorType" value="true"/>
+                            <span >Default</span>
+                        </div>
+                        <div >
+                            <g:SimpleRadioButton ui:field="mafColorRd" name="colorType" />
+                            <span >MAF</span>
+                        </div>
+                    </div>
+                </g:HTMLPanel>
+            </g:Tab>
+            <g:Tab text="Tracks">
+                <g:FlowPanel>
+                    <g:HTMLPanel>
+                        <div >
+                            <h4>Default tracks:</h4>
+                            <g:HTMLPanel ui:field="trackContainer"></g:HTMLPanel>
+                            <hr />
+                        </div>
+                    </g:HTMLPanel>
+                    <g:DisclosurePanel visible="false" ui:field="uploadCustomContainer">
+                        <g:header>Upload custom tracks</g:header>
+                        <g:HTMLPanel ui:field="uploadWidgetContainer"/>
+                    </g:DisclosurePanel>
+                </g:FlowPanel>
+            </g:Tab>
+        </g:TabPanel>
+    </g:HTMLPanel>
+</ui:UiBinder>
