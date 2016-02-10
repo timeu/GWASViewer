@@ -1,0 +1,73 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+             xmlns:g="urn:import:com.google.gwt.user.client.ui">
+
+    <ui:style>
+
+        .uploadErrorMessage {
+            color: red;
+            font-weight: bold;
+        }
+
+        .uploadPanel {
+            padding:10px;
+        }
+
+        .uploadPanel ul {
+
+        }
+        .uploadPanel ul,.uploadPanel li {
+            border: 0;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .uploadPanel li {
+            clear: both;
+            list-style: none;
+            padding-bottom: 10px;
+        }
+
+        .uploadPanel  input {
+        }
+
+        .uploadPanel label {
+            width: 140px;
+            display:inline-block;
+        }
+
+    </ui:style>
+
+    <g:FormPanel ui:field="uploadFormPanel" method="POST" action="/uploadTrack">
+        <g:HTMLPanel addStyleNames="{style.uploadPanel}">
+            <span ui:field="uploadErrorMessage" class="{style.uploadErrorMessage}"/>
+            <ul>
+                <li>
+                    <label for="nameTb">Name</label>
+                    <g:TextBox name="nameTb" ui:field="nameTb" />
+                </li>
+                <li>
+                    <label for="fileBox">File</label>
+                    <g:FileUpload  name="fileBox" ui:field="fileBox" />
+                </li>
+                <li>
+                    or
+                </li>
+                <li>
+                    <label for="urlTb">URL</label>
+                    <g:TextBox name="urlTb" ui:field="urlTb" />
+                </li>
+                <li>
+                    <g:RadioButton name="saveLocation" ui:field="saveLocalRb" text="Save in local storage" value="true"></g:RadioButton>
+                    <g:RadioButton name="saveLocation" ui:field="saveServerRb" text="Save on server"></g:RadioButton>
+                </li>
+                <li>
+                    <g:Button ui:field="formSubmitBtn" text="Upload" enabled="false"></g:Button>
+                    <g:Button ui:field="cancelUploadBtn" text="Cancel"></g:Button>
+                </li>
+            </ul>
+
+        </g:HTMLPanel>
+    </g:FormPanel>
+</ui:UiBinder>
