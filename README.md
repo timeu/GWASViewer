@@ -3,9 +3,9 @@
 
 GWASViewer is a Google Web Toolkit (GWT) widget for displaying interactive Manhattan plots.
 It is a composite of multiple different GWT widgets:   
-[dygraphs-gwt][0] as the actual Manhattan plot and statistic plots  
-[GeneViewer][1] as the gene annotation track  
-[LDViewer][2] as a LD triangle viewer  
+- [dygraphs-gwt][0] as the actual Manhattan plot and statistic plots  
+- [GeneViewer][1] as the gene annotation track  
+- [LDViewer][2] as a LD triangle viewer  
 
 ![GWASViewer](https://raw.githubusercontent.com/timeu/GWASViewer/master/gwasviewer.png "GWASViewer")
 
@@ -132,7 +132,7 @@ For maven:
 or passing it to the compiler via `-generateJsInteropExports`
 
 You can also download the [jar][6] directly or check out the source using git
-from <https://github.com/timeu/geneviewer.git> and build it yourself. Once
+from <https://github.com/timeu/gwasviewer.git> and build it yourself. Once
 you've installed LDViewer, be sure to inherit the module in your .gwt.xml
 file like this:
 
@@ -152,4 +152,4 @@ file like this:
 [5]: https://docs.google.com/document/d/10fmlEYIHcyead_4R1S5wKGs1t2I7Fnp_PaNaa7XTEk0/edit#heading=h.o7amqk9edhb9
 [6]: https://github.com/timeu/GWASViewer/releases
 [7]: http://timeu.github.io/GWASViewer
-[8]: https://github.com/timeu/GeneViewer/tree/master/gwasviewer-sample 
+[8]: https://github.com/timeu/GWASViewer/tree/master/gwasviewer-sample 
