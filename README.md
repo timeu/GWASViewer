@@ -2,10 +2,10 @@
 
 
 GWASViewer is a Google Web Toolkit (GWT) widget for displaying interactive Manhattan plots.
-It is a composite of multiple different GWT widgets: 
-  1. [dygraphs-gwt][0] as the actual Manhattan plot and statistic plots
-  2. [GeneViewer][1] as the gene annotation track
-  3. [LDViewer][2] as a LD triangle viewer
+It is a composite of multiple different GWT widgets:   
+[dygraphs-gwt][0] as the actual Manhattan plot and statistic plots  
+[GeneViewer][1] as the gene annotation track  
+[LDViewer][2] as a LD triangle viewer  
 
 ![GWASViewer](https://raw.githubusercontent.com/timeu/GWASViewer/master/gwasviewer.png "GWASViewer")
 
@@ -35,17 +35,19 @@ viewer.draw(dataTable, maxScore, fdrThreshold, chrLengths);
 ```
 
 ### Load list of tracks and handle the track selection
+
 `GWASViewer` can display a list of tracks when the user opens the settings popup. 
  The user can set this list by using the `setTracks` function:
 
-```
+```JAVA
 Tracks[] listOfTracks = // get from server for example
 viewer.setTracks(listOfTracks);
 ```
+
 When the user selects a track from the popup, an `SelectTrackEvent` event will be fired. The user can handle the event
 retrieve the data from the backend and then call `setTrackData` to display the track:
  
-```
+```JAVA
 viewer.addHandler(new SelectTrackEvent.Handler() {
      @Override
      public void onSelectTrack(SelectTrackEvent event) {
@@ -53,6 +55,8 @@ viewer.addHandler(new SelectTrackEvent.Handler() {
         viewer.setTrackData(event.getId(),event.isStacked(),dataTable);
      }
 },SelectTrackEvent.getType());
+
+```
 
 The track data has to be provided as a [gwt-charts][3] DataTable object with 2 columns (position, and value).
 
@@ -65,13 +69,13 @@ the user can use `showColoredLDValues`. For more information refer to the [LDVie
  
 To highlight one or multiple regions, use the `addDisplayFeature` function and to clear it use `clearDisplayFeatures()`: 
  
-```
+```JAVA
 viewer.addDisplayFeature(new DisplayFeature("AT4G00651.1", 271486, 271879, "red"), true);
 viewer.addDisplayFeature(new DisplayFeature("Some interesting region", 8753993, 9241760, "green"), true);
 ```
 
 To select one or more SNPs use `setSelections` and to clear `clearSelections()`:
-```
+```JAVA
 selections.add(148);
 selections.add(1220);
 selections.add(2240);
