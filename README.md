@@ -7,7 +7,7 @@ It is a composite of multiple different GWT widgets:
   2. [GeneViewer][1] as the gene annotation track
   3. [LDViewer][2] as a LD triangle viewer
 
-![GWASViewer](https://raw.githubusercontent.com/timeu/GeneViewer/master/gwasviewer.png "GWASViewer")
+![GWASViewer](https://raw.githubusercontent.com/timeu/GWASViewer/master/gwasviewer.png "GWASViewer")
 
 
 ## How do I use it?
