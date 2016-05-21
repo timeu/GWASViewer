@@ -31,24 +31,26 @@
                     <div ui:field="filterContainer">
                         <h4>Filter [<g:Anchor addStyleNames="{style.defaultFilterBtn}" ui:field="defaultFilterBtn">Default</g:Anchor>]:</h4>
                         <hr class="{style.hr}"/>
-                        <div ui:field="macContainer">
-                            <div>
-                                <g:SimpleRadioButton ui:field="macRd" name="filterType" value="false"/>
-                                <span ui:field="macLb">MAC [<span ui:field="macValue"></span>]</span>
+                        <form>
+                            <div ui:field="macContainer">
+                                <div>
+                                    <g:SimpleRadioButton ui:field="macRd" name="filterType" value="false"/>
+                                    <span ui:field="macLb">MAC [<span ui:field="macValue"></span>]</span>
+                                </div>
+                                <g:TextBox ui:field="macTb" width="150px"></g:TextBox>
                             </div>
-                            <g:TextBox ui:field="macTb" width="150px"></g:TextBox>
-                        </div>
-                        <div ui:field="mafContainer">
-                            <div>
-                                <g:SimpleRadioButton ui:field="mafRd" name="filterType" value="false" />
-                                <span ui:field="mafLb">MAF [<span ui:field="mafValue"></span>]</span>
+                            <div ui:field="mafContainer">
+                                <div>
+                                    <g:SimpleRadioButton ui:field="mafRd" name="filterType" value="false" />
+                                    <span ui:field="mafLb">MAF [<span ui:field="mafValue"></span>]</span>
+                                </div>
+                                <g:TextBox ui:field="mafTb" width="150px"></g:TextBox>
                             </div>
-                            <g:TextBox ui:field="mafTb" width="150px"></g:TextBox>
-                        </div>
-                        <div>
-                            <g:SimpleRadioButton ui:field="noMaFilter" name="filterType" value="true" />
-                            <span ui:field="noFilterLb">No Filter</span>
-                        </div>
+                            <div>
+                                <g:SimpleRadioButton ui:field="noMaFilter" name="filterType" value="true" />
+                                <span ui:field="noFilterLb">No Filter</span>
+                            </div>
+                        </form>
                     </div>
                 </g:HTMLPanel>
             </g:Tab>
@@ -57,23 +59,24 @@
                     <div >
                         <h4>Display:</h4>
                         <hr class="{style.hr}"/>
-                        <div >
-                            <g:SimpleRadioButton ui:field="showAllRd" name="displayType" value="true"/>
-                            <span >All [<span class="{style.symbol_nonsyn}">&#9653;</span><span class="{style.symbol_syn}">&#9725;</span>: <span ui:field="displayAllLb"></span>]</span>
-                        </div>
-                        <div >
-                            <g:SimpleRadioButton ui:field="showSynRd" name="displayType" />
-                            <span >Synonymous [<span class="{style.symbol_syn}">&#9725;</span>:<span ui:field="displaySynLb"></span>]</span>
-                        </div>
-                        <div>
-                            <g:SimpleRadioButton ui:field="showNonSynRd" name="displayType" />
-                            <span >Non-Synonymous [<span class="{style.symbol_nonsyn}">&#9653;</span>: <span ui:field="displayNonSynLb"></span>]</span>
-                        </div>
-                        <div >
-                            <g:SimpleCheckBox ui:field="showInGenes" />
-                            <span >Only in genes?</span>
-                        </div>
-
+                        <form>
+                            <div >
+                                <g:SimpleRadioButton ui:field="showAllRd" name="displayType" value="true"/>
+                                <span >All [<span class="{style.symbol_nonsyn}">&#9653;</span><span class="{style.symbol_syn}">&#9725;</span>: <span ui:field="displayAllLb"></span>]</span>
+                            </div>
+                            <div >
+                                <g:SimpleRadioButton ui:field="showSynRd" name="displayType" />
+                                <span >Synonymous [<span class="{style.symbol_syn}">&#9725;</span>:<span ui:field="displaySynLb"></span>]</span>
+                            </div>
+                            <div>
+                                <g:SimpleRadioButton ui:field="showNonSynRd" name="displayType" />
+                                <span >Non-Synonymous [<span class="{style.symbol_nonsyn}">&#9653;</span>: <span ui:field="displayNonSynLb"></span>]</span>
+                            </div>
+                            <div >
+                                <g:SimpleCheckBox ui:field="showInGenes" />
+                                <span >Only in genes?</span>
+                            </div>
+                        </form>
                     </div>
                 </g:HTMLPanel>
             </g:Tab>
@@ -82,14 +85,16 @@
                     <div >
                         <h4>Color:</h4>
                         <hr class="{style.hr}"/>
-                        <div >
-                            <g:SimpleRadioButton ui:field="standardColorRd" name="colorType" value="true"/>
-                            <span >Default</span>
-                        </div>
-                        <div >
-                            <g:SimpleRadioButton ui:field="mafColorRd" name="colorType" />
-                            <span >MAF</span>
-                        </div>
+                        <form>
+                            <div >
+                                <g:SimpleRadioButton ui:field="standardColorRd" name="colorType" value="true"/>
+                                <span >Default</span>
+                            </div>
+                            <div >
+                                <g:SimpleRadioButton ui:field="mafColorRd" name="colorType" />
+                                <span >MAF</span>
+                            </div>
+                        </form>
                     </div>
                 </g:HTMLPanel>
             </g:Tab>

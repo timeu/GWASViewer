@@ -8,21 +8,19 @@ import com.google.gwt.event.shared.GwtEvent;
 /**
  * Created by uemit.seren on 9/23/15.
  */
-public class ClickPointEvent extends GwtEvent<ClickPointEvent.Handler> {
+public class PointClickEvent extends GwtEvent<PointClickEvent.Handler> {
 
     public interface Handler extends EventHandler {
-        void onClick(ClickPointEvent event);
+        void onClick(PointClickEvent event);
     }
 
     private static Type<Handler> TYPE;
 
-    public final double x;
-    public final Point[] points;
+    public final Point point;
     public final NativeEvent event;
 
-    public ClickPointEvent(NativeEvent event, double x, Point[] points){
-        this.x = x;
-        this.points = points;
+    public PointClickEvent(NativeEvent event, Point point){
+        this.point = point;
         this.event = event;
     }
 

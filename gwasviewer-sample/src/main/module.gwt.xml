@@ -4,4 +4,7 @@
     <source path="client"/>
 
     <entry-point class="sample.client.SampleEntryPoint"/>
+
+    <set-configuration-property name="CssResource.gssDefaultInUiBinder" value="true"/>
+    <set-configuration-property name="CssResource.enableGss" value="true"/>
 </module>

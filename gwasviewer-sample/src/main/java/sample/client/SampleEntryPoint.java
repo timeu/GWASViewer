@@ -23,7 +23,7 @@ import com.github.timeu.gwtlibs.geneviewer.client.event.UnhighlightGeneEvent;
 import com.github.timeu.gwtlibs.gwasviewer.client.DisplayFeature;
 import com.github.timeu.gwtlibs.gwasviewer.client.GWASViewer;
 import com.github.timeu.gwtlibs.gwasviewer.client.Track;
-import com.github.timeu.gwtlibs.gwasviewer.client.events.ClickPointEvent;
+import com.github.timeu.gwtlibs.gwasviewer.client.events.PointClickEvent;
 import com.github.timeu.gwtlibs.gwasviewer.client.events.DeleteTrackEvent;
 import com.github.timeu.gwtlibs.gwasviewer.client.events.FetchGeneInfoCallback;
 import com.github.timeu.gwtlibs.gwasviewer.client.events.FetchGenesCallback;
@@ -112,8 +112,8 @@ public class SampleEntryPoint implements EntryPoint {
     GWASViewer gwasviewer;
 
 
-    private String[] colors = {"blue", "green", "red", "cyan", "purple"};
-    private String[] gene_mark_colors = {"red", "red", "blue", "red", "green"};
+    private String[] colors = {"green","blue",  "red", "cyan", "purple"};
+    private String[] gene_mark_colors = {"red","red",  "blue", "red", "green"};
     private boolean showFeatures = false;
     private SNPPopup snpPopup = new SNPPopup();
     GWASData data;
@@ -194,7 +194,7 @@ public class SampleEntryPoint implements EntryPoint {
                     @Override
                     public void onClick(ClickEvent clickEvent) {
                         LDData ldData = getLDData();
-                        gwasviewer.loadLDPlot(ldData.getPositions(), ldData.getR2(), ldData.getStart(), ldData.getEnd());
+                        gwasviewer.loadLDPlot(ldData.getSnps(), ldData.getR2(), ldData.getStart(), ldData.getEnd());
                         logEvent("LDTriangle option clicked");
                     }
                 });
@@ -229,7 +229,7 @@ public class SampleEntryPoint implements EntryPoint {
                             selections.add(1220);
                             selections.add(2240);
                             gwasviewer.setSelections(selections,false);
-                            setSelectionBtn.setText("Clear SNP selections");
+                            setSelectionBtn.setText("Clearfromat SNP selections");
                             hasSNPSelections = true;
                         }
 
@@ -257,55 +257,56 @@ public class SampleEntryPoint implements EntryPoint {
 
 
    private void sinkEvents() {
-        gwasviewer.addHandler(new ClickGeneEvent.Handler() {
+        gwasviewer.addClickGeneHandler(new ClickGeneEvent.Handler() {
             @Override
             public void onClickGene(ClickGeneEvent event) {
                 logEvent("ClickGeneEvent called: Gene: " + getMessageFromGene(event.getGene()));
             }
-        }, ClickGeneEvent.getType());
+        });
 
-        gwasviewer.addHandler(new UnhighlightGeneEvent.Handler() {
+        gwasviewer.addUnhighlightGeneHandler(new UnhighlightGeneEvent.Handler() {
 
             @Override
             public void onUnhighlightGene(UnhighlightGeneEvent event) {
                 logEvent("UnhighlightGeneEvent called");
             }
-        }, UnhighlightGeneEvent.getType());
-       gwasviewer.addHandler(new HighlightGeneEvent.Handler() {
+        });
+       gwasviewer.addHighlightGeneHandler(new HighlightGeneEvent.Handler() {
            @Override
            public void onHightlightGene(HighlightGeneEvent event) {
                logEvent("HighlightGeneEvent called: Gene: " + getMessageFromGene(event.getGene()));
            }
-       }, HighlightGeneEvent.getType());
+       });
 
-       gwasviewer.addHandler(new ZoomChangeEvent.Handler() {
+       gwasviewer.addZoomChangeHandler(new ZoomChangeEvent.Handler() {
            @Override
            public void onZoomResize(ZoomChangeEvent event) {
                //zoomLabel.setHTML("<b>" + event.start + "</b> - <b>" + event.stop + "</b>");
                logEvent("ZoomResizeEvent called: start: " + event.start + ", end:" + event.stop);
            }
-       },ZoomChangeEvent.getType());
-       gwasviewer.addHandler(new HighlightPointEvent.Handler() {
+       });
+       gwasviewer.addHighlightPointHandler(new HighlightPointEvent.Handler() {
 
            @Override
            public void onHighlight(HighlightPointEvent event) {
                //logEvent("HighlightPointEvent called: Points: " + getMessageFromPoints(event.points));
            }
-       }, HighlightPointEvent.getType());
+       });
 
-       gwasviewer.addHandler(new ClickPointEvent.Handler() {
+       gwasviewer.addPointClickHandler(new PointClickEvent.Handler() {
            @Override
-           public void onClick(ClickPointEvent event) {
-               logEvent("ClickPointEvent called: x: " + event.x + ", Point: " + getMessageFromPoints(event.points));
-               snpPopup.setDataPoint(4, (int) event.x);
+           public void onClick(PointClickEvent event) {
+               logEvent("ClickPointEvent called:Point: " + getMessageFromPoint(event.point));
+               int x = (int)event.point.getXval();
+               snpPopup.setDataPoint(4, x);
                snpPopup.setPopupPosition(event.event.getClientX(), event.event.getClientY() - 47);
-               if (event.x == 276143) {
+               if (x == 276143) {
                    snpPopup.show();
                }
            }
-       },ClickPointEvent.getType());
+       });
 
-       gwasviewer.addHandler(new SelectTrackEvent.Handler() {
+       gwasviewer.addSelectTrackHandler(new SelectTrackEvent.Handler() {
            @Override
            public void onSelectTrack(SelectTrackEvent event) {
                logEvent("SelectTrackEvent called: id: " + event.getId()+", isStacked: " + event.isStacked());
@@ -340,22 +341,22 @@ public class SampleEntryPoint implements EntryPoint {
                    gwasviewer.setTrackData(event.getId(), event.isStacked(),table);
                }
            }
-       },SelectTrackEvent.getType());
+       });
 
-       gwasviewer.addHandler(new UploadTrackEvent.Handler() {
+       gwasviewer.addUploadTrackHandler(new UploadTrackEvent.Handler() {
            @Override
            public void onUploadTack(UploadTrackEvent event) {
                initTracks();
            }
-       },UploadTrackEvent.getType());
+       });
 
-       gwasviewer.addHandler(new DeleteTrackEvent.Handler() {
+       gwasviewer.addDeleteTrackHandler(new DeleteTrackEvent.Handler() {
            @Override
            public void onDeleteTrack(DeleteTrackEvent event) {
                localStore.removeItem(statsprefix+event.getId());
                initTracks();
            }
-       }, DeleteTrackEvent.getType());
+       });
     }
 
     //FIXME until https://github.com/google/gwt-charts/issues/60 is fixed

@@ -13,6 +13,8 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.LayoutPanel;
+import com.google.gwt.user.client.ui.ResizeComposite;
 import com.googlecode.gwt.charts.client.DataTable;
 import com.googlecode.gwt.charts.client.DataView;
 
@@ -23,14 +25,14 @@ import java.util.List;
 /**
  * Created by uemit.seren on 9/1/15.
  */
-public class TracksPanel extends Composite {
+public class TracksPanel extends ResizeComposite {
 
     private Dygraphs dygraphs;
 
     private DataTable trackData;
     private List<Integer> activeColumns = new ArrayList<>();
     private int[][] joinKeys = {{0, 0}};
-    private FlowPanel panel = new FlowPanel();
+    private LayoutPanel panel = new LayoutPanel();
     private int zoomStart = 0;
     private int zoomEnd = 0;
 
@@ -120,6 +122,7 @@ public class TracksPanel extends Composite {
         DataView view = DataView.create(trackData);
         view.setColumns(columns);
         DygraphsOptions options = createOptions(false);
+        setVisible(columns.length() > 1);
         if (dygraphs == null) {
             dygraphs = new Dygraphs(trackData,createOptions(false));
             initDygraphElement();
@@ -127,9 +130,10 @@ public class TracksPanel extends Composite {
         }
         else {
             options.file = view;
-            dygraphs.getJSO().updateOptions(options,false);
+            dygraphs.getJSO().updateOptions(options,true);
+            //required otherwise is empty if parent is hidden and dispalyed again
+            dygraphs.resize();
         }
-        setVisible(columns.length() > 1);
     }
 
     private void initDygraphElement() {

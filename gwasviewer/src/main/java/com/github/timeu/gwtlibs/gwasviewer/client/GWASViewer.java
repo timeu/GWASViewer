@@ -1,13 +1,14 @@
 package com.github.timeu.gwtlibs.gwasviewer.client;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.github.timeu.dygraphsgwt.client.callbacks.ClickCallback;
+import com.github.timeu.dygraphsgwt.client.callbacks.PointClickCallback;
 import com.github.timeu.dygraphsgwt.client.extras.DrawingShapes;
 import com.github.timeu.dygraphsgwt.client.Dygraphs;
 import com.github.timeu.dygraphsgwt.client.DygraphsJs;
@@ -31,7 +32,7 @@ import com.github.timeu.gwtlibs.geneviewer.client.event.FetchGeneEvent;
 import com.github.timeu.gwtlibs.geneviewer.client.event.HighlightGeneEvent;
 import com.github.timeu.gwtlibs.geneviewer.client.event.UnhighlightGeneEvent;
 import com.github.timeu.gwtlibs.geneviewer.client.event.ZoomResizeEvent;
-import com.github.timeu.gwtlibs.gwasviewer.client.events.ClickPointEvent;
+import com.github.timeu.gwtlibs.gwasviewer.client.events.PointClickEvent;
 import com.github.timeu.gwtlibs.gwasviewer.client.events.ColorChangeEvent;
 import com.github.timeu.gwtlibs.gwasviewer.client.events.DeleteTrackEvent;
 import com.github.timeu.gwtlibs.gwasviewer.client.events.FetchGeneInfoCallback;
@@ -66,6 +67,7 @@ import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Label;
+import com.google.web.bindery.event.shared.HandlerRegistration;
 import com.googlecode.gwt.charts.client.ColumnRange;
 import com.googlecode.gwt.charts.client.DataTable;
 import com.googlecode.gwt.charts.client.DataView;
@@ -152,6 +154,8 @@ public class GWASViewer extends Composite implements RequiresResize {
     private int mafColIdx= -1;
     private int macColIdx=-1;
 
+    private String colorType = null;
+
     public GWASViewer() {
 		initWidget();
 		initGenomeView();
@@ -168,11 +172,13 @@ public class GWASViewer extends Composite implements RequiresResize {
 		initLDViewer();
 	}
 	private void initWidget() {
-        ScriptInjector.injectScript();
+        ScriptInjector.injectScript(true);
         ScriptInjector.injectExtra(ScriptInjector.EXTRAS.SHAPES);
 		mainRes = GWT.create(Resources.class);
 		mainRes.style().ensureInjected();
 		initWidget(uiBinder.createAndBindUi(this));
+        settingsPanel.setChromosome(chromosome);
+        colorType = settingsPanel.getColorType();
         chromosomeLabel.setText(chromosome);
         settingsBtn.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
             @Override
@@ -185,6 +191,7 @@ public class GWASViewer extends Composite implements RequiresResize {
             @Override
             public void onFilterChanged(FilterChangeEvent event) {
                 filterAndDraw();
+                fireEvent(event);
             }
         }, FilterChangeEvent.getType());
 
@@ -216,6 +223,7 @@ public class GWASViewer extends Composite implements RequiresResize {
 
             @Override
             public void onColorChange(ColorChangeEvent event) {
+                colorType = settingsPanel.getColorType();
                 refresh();
             }
         },ColorChangeEvent.getType());
@@ -258,6 +266,23 @@ public class GWASViewer extends Composite implements RequiresResize {
         if (!blockRedraw) {
             this.refresh();
         }
+    }
+
+    public void removeDisplayFeature(DisplayFeature feature,boolean blockRedraw) {
+        if (displayFeatures.containsKey(feature)) {
+            scatterChart.getElement().removeChild(displayFeatures.get(feature));
+            displayFeatures.remove(feature);
+            if (!blockRedraw) {
+                this.refresh();
+            }
+        }
+    }
+
+    public void removeDisplayFeatures(Collection<DisplayFeature> features) {
+        for (DisplayFeature feature: features) {
+            removeDisplayFeature(feature,true);
+        }
+        this.refresh();
     }
 
 	public void clearDisplayFeatures()
@@ -451,6 +476,8 @@ public class GWASViewer extends Composite implements RequiresResize {
 
     public void draw(DataTable dataTable,double maxValue,double pvalThreshold,int chrSize)
 	{
+        ldviewer.setVisible(false);
+        toggleGenomeViewVisible(false);
 		this.dataTable = dataTable;
 		this.maxValue = maxValue;
 		this.pvalThreshold = pvalThreshold;
@@ -475,7 +502,6 @@ public class GWASViewer extends Composite implements RequiresResize {
 		this.drawManhattanPlot();
 		/*if (selectHandler != null)
 			scatterChart.addSelectHandler(selectHandler);*/
-		ldviewer.setVisible(false);
 	}
 
 	protected void drawManhattanPlot()
@@ -485,13 +511,13 @@ public class GWASViewer extends Composite implements RequiresResize {
         scatterChartOptions.drawPointCallback = new DrawPointCallback() {
             @Override
             public void onDraw(DygraphsJs dygraphs, String seriesName, Context2d context, double cx, double cy, String color, int pointSize, int idx) {
-                onDrawManhattan(dygraphs, seriesName, context, cx, cy, color, pointSize, idx);
+                onDrawManhattan(dygraphs, seriesName, context, cx, cy, color, pointSize, idx,false);
             }
         };
         scatterChartOptions.drawHighlightPointCallback =new DrawPointCallback() {
             @Override
             public void onDraw(DygraphsJs dygraphs, String seriesName, Context2d context, double cx, double cy, String color, int pointSize, int idx) {
-                onDrawManhattan(dygraphs, seriesName, context, cx, cy, color, pointSize, idx);
+                onDrawManhattan(dygraphs, seriesName, context, cx, cy, color, pointSize, idx,true);
             }
         };
         scatterChartOptions.zoomCallback = new ZoomCallback() {
@@ -514,10 +540,10 @@ public class GWASViewer extends Composite implements RequiresResize {
                 onUnhighlightManhattan(event);
             }
         };
-        scatterChartOptions.clickCallback = new ClickCallback() {
+        scatterChartOptions.pointClickCallback = new PointClickCallback() {
             @Override
-            public void onClick(NativeEvent event, double x, Point[] points) {
-                fireEvent(new ClickPointEvent(event,x,points));
+            public void onClick(NativeEvent event, Point point) {
+                fireEvent(new PointClickEvent(event,point));
             }
         };
 		scatterChartOptions.underlayCallback = new UnderlayCallback() {
@@ -669,6 +695,7 @@ public class GWASViewer extends Composite implements RequiresResize {
 		isNotPairWise  = true;
 		setHighlightedDataPoints(position, snps, r2Values);
 		ldviewer.setVisible(false);
+        scatterChart.redraw();
 	}
 
 
@@ -702,6 +729,7 @@ public class GWASViewer extends Composite implements RequiresResize {
 		options.colors = color;
 		HighlightSeriesOptions highlightSeriesOptions = new HighlightSeriesOptions();
 		options.highlightSeriesOpts = highlightSeriesOptions;
+        options.highlightSeriesBackgroundAlpha = 1.0;
 		//options.setDateWindow(viewStart, viewEnd);
 		options.animatedZooms = true;
 		return options;
@@ -711,9 +739,7 @@ public class GWASViewer extends Composite implements RequiresResize {
         if (geneViewerContainer.isVisible() == visible)
             return;
         geneViewerContainer.setVisible(visible);
-        if (visible) {
-            geneViewer.onResize();
-        }
+        onResize();
 	}
 
 	public void setMinZoomLevelForGenomeView(Integer minZoomLevelForGenomeView) {
@@ -856,15 +882,21 @@ public class GWASViewer extends Composite implements RequiresResize {
         return point.getR2Color(threshold,maxColor);
     }
 
-    private void onDrawManhattan(DygraphsJs dygraphs, String seriesName, Context2d context, double cx, double cy, String color, int pointSize, int idx) {
+    private void onDrawManhattan(DygraphsJs dygraphs, String seriesName, Context2d context, double cx, double cy, String color, int pointSize, int idx, boolean isHighlight) {
         context.setLineWidth(1);
 
         if (highlightedLDDataPoints != null) {
-            int x = (int)scatterChart.getJSO().toDataXCoord(cx);
+            int x = (int) filteredView.getValueNumber(idx,0);
             LDDataPoint point = highlightedLDDataPoints.get(x);
             if (point != null) {
-                int hue = getR2Color(point,threshold,maxColor);
-                color = "rgb(255,"+hue+",0)";
+                // for the LD triangle always asume that highlighted point has r2 = 1
+                if (isHighlight && !isNotPairWise) {
+                    color = "rgb(255,0,0)";
+                }
+                else {
+                    int hue = getR2Color(point, threshold, maxColor);
+                    color = "rgb(255," + hue + ",0)";
+                }
             }
             else
                 color = "blue";
@@ -873,13 +905,11 @@ public class GWASViewer extends Composite implements RequiresResize {
             int x = (int)scatterChart.getJSO().toDataXCoord(cx);
             if (x == highlightedLDDataPoint.posX || x == highlightedLDDataPoint.posY) {
                 int hue = getR2Color(highlightedLDDataPoint,threshold,maxColor);
-                //int hue =  highlightedLDDataPoint.getR2Color(threshold, maxColor);
                 color = "rgb(255,"+hue+",0)";
                 pointSize+=1;
             }
         }
-        else if (settingsPanel.getColorType() != null) {
-            String colorType = settingsPanel.getColorType();
+        else if (colorType != null) {
             // Cache to improve performance
             if (colorColumnIdx < 0) {
                 colorColumnIdx = getColumnIndexFromName(colorType);
@@ -1016,7 +1046,6 @@ public class GWASViewer extends Composite implements RequiresResize {
             ctx.setStrokeStyle(geneMarkerColor);
             ctx.moveTo(0, posY);
             ctx.lineTo(width, posY);
-            ctx.closePath();
             ctx.stroke();
             uninstallPattern(ctx);
             ctx.restore();
@@ -1028,12 +1057,13 @@ public class GWASViewer extends Composite implements RequiresResize {
     private void onHighlightManhattan(NativeEvent event, long x, Point[] points, int row, String seriesName) {
         geneViewer.setSelectionLine((int) x);
         if (ldviewer.isVisible()) {
-            ldviewer.setHighlightPosition((int) x);
+            ldviewer.setHighlightPosition((int)x);
             highlightedLDDataPoints = getHighlightedDataPointMap();
             highlightedLDDataPoint = null;
-            /*int row = scatterChart.getDygraphsJS().getSelection();
+            // FIXME because onHighlightManhatten is called after drawing we have to redraw to keep the highlightedLDDataPoints in sync
             scatterChart.redraw();
-            scatterChart.getDygraphsJS().setSelection(row, null);*/
+            // FIXME because scatterChart.redraw() will unselect the highlighted point, we have to remember the selection and then set it after the redraw
+            scatterChart.getJSO().setSelection(row, null,false);
         }
     }
 
@@ -1044,8 +1074,8 @@ public class GWASViewer extends Composite implements RequiresResize {
             ldviewer.setHighlightPosition(null);
             highlightedLDDataPoints = null;
             highlightedLDDataPoint = null;
-            /*scatterChart.getDygraphsJS().clearSelection();
-            scatterChart.redraw();*/
+            scatterChart.getJSO().clearSelection();
+            scatterChart.redraw();
         }
     }
 
@@ -1099,6 +1129,73 @@ public class GWASViewer extends Composite implements RequiresResize {
     public void setTrackData(String id,boolean isStacked, DataTable data) {
         settingsPanel.addActivateTrack(id,isStacked);
         tracksPanel.addTrackToDisplay(id,data,isStacked);
+    }
+
+    public void setMinMAC(double minMac) {
+        settingsPanel.setMinMAC(minMac);
+    }
+
+    public void setMinMAF(double minMaf) {
+        settingsPanel.setMinMAF(minMaf);
+    }
+
+    public double getMinMAC() {
+        return settingsPanel.getMinMAC();
+    }
+
+    public double getMinMAF() {
+        return settingsPanel.getMinMAF();
+    }
+
+    public SettingsPanel.MINOR_FILTER getMinorFilterType() {
+        return settingsPanel.getFilterType();
+    }
+
+    public void setMinorFilterType(SettingsPanel.MINOR_FILTER filterType) {
+        settingsPanel.setFilterType(filterType);
+    }
+
+    public HandlerRegistration addFilterChangeHandler(FilterChangeEvent.Handler handler) {
+        return addHandler(handler,FilterChangeEvent.getType());
+    }
+
+    public HandlerRegistration addDeleteTrackHandler(DeleteTrackEvent.Handler handler) {
+        return addHandler(handler,DeleteTrackEvent.getType());
+    }
+
+    public HandlerRegistration addSelectTrackHandler(SelectTrackEvent.Handler handler) {
+        return addHandler(handler,SelectTrackEvent.getType());
+    }
+
+    public HandlerRegistration addColorChangeHandler(ColorChangeEvent.Handler handler) {
+        return addHandler(handler,ColorChangeEvent.getType());
+    }
+
+    public HandlerRegistration addUploadTrackHandler(UploadTrackEvent.Handler handler) {
+        return addHandler(handler,UploadTrackEvent.getType());
+    }
+
+    public HandlerRegistration addZoomChangeHandler(ZoomChangeEvent.Handler handler) {
+        return addHandler(handler,ZoomChangeEvent.getType());
+    }
+
+    public HandlerRegistration addFetchGeneHandler(FetchGeneEvent.Handler handler) {
+        return addHandler(handler,FetchGeneEvent.getType());
+    }
+    public HandlerRegistration addHighlightGeneHandler(HighlightGeneEvent.Handler handler) {
+        return addHandler(handler,HighlightGeneEvent.getType());
+    }
+    public HandlerRegistration addUnhighlightGeneHandler(UnhighlightGeneEvent.Handler handler) {
+        return addHandler(handler,UnhighlightGeneEvent.getType());
+    }
+    public HandlerRegistration addClickGeneHandler(ClickGeneEvent.Handler handler) {
+        return addHandler(handler,ClickGeneEvent.getType());
+    }
+    public HandlerRegistration addHighlightPointHandler(HighlightPointEvent.Handler handler) {
+        return addHandler(handler,HighlightPointEvent.getType());
+    }
+    public HandlerRegistration addPointClickHandler(PointClickEvent.Handler handler) {
+        return addHandler(handler,PointClickEvent.getType());
     }
 
 

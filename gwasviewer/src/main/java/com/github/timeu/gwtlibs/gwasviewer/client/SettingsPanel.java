@@ -126,6 +126,7 @@ public class SettingsPanel extends Composite {
 
     public enum DISPLAY_FILTER {ALL,SYNONYMOUS,NONSYNONYMOUS}
     protected DISPLAY_FILTER displayFilter = DISPLAY_FILTER.ALL;
+    private String chr ="";
 
     protected MINOR_FILTER minorFilter = MINOR_FILTER.NO;
     public SettingsPanel() {
@@ -143,6 +144,8 @@ public class SettingsPanel extends Composite {
         macTb.getElement().setAttribute("type", "range");
         mafTb.getElement().setAttribute("type","range");
         mafTb.getElement().setAttribute("step", "0.01");
+        macTb.setValue(String.valueOf(minMAC));
+        mafTb.setValue(String.valueOf(minMAF));
         updateFilter();
         settingsTabPanel.selectTab(0);
         setUploadTrackWidget(defaultUploadWidget);
@@ -347,7 +350,7 @@ public class SettingsPanel extends Composite {
     private void initTrackDisplay() {
         for (Track track:tracks) {
             Image checkBoxImage = new Image(mainRes.checkmark());
-            checkBoxImage.getElement().setId("cb_"+track.id);
+            checkBoxImage.getElement().setId("cb_"+chr+"_"+track.id);
             checkBoxImage.setTitle("Click to add/remove "+ track.name+" statistics to the chart as new series");
             checkBoxImage.setAltText(track.name);
             checkBoxImage.getElement().setAttribute("data-id",track.id);
@@ -389,7 +392,8 @@ public class SettingsPanel extends Composite {
             }));
             handlerRegistrations.add(checkBoxImage.addClickHandler(new ClickHandler() {
                 @Override
-                public void onClick(ClickEvent event) {
+                public void onClick
+(ClickEvent event) {
                     Image source = (Image)event.getSource();
                     String id = source.getElement().getAttribute("data-id");
                     fireEvent(new SelectTrackEvent(id,true));
@@ -411,7 +415,7 @@ public class SettingsPanel extends Composite {
             }
         }
         for (String id : activeTracks) {
-            Element element = trackContainer.getElementById("cb_"+id);
+            Element element = trackContainer.getElementById("cb_"+chr+"_"+id);
             element.toggleClassName(mainRes.style().settingsContentItemCheckboxChecked());
         }
     }
@@ -447,9 +451,9 @@ public class SettingsPanel extends Composite {
         }
         uploadHandlerRegistrations.clear();
         this.uploadTrackWidget = widget;
-        uploadWidgetContainer.add(widget);
         uploadCustomContainer.setVisible(widget != null);
         if (widget != null) {
+            uploadWidgetContainer.add(widget);
             uploadHandlerRegistrations.add(widget.asWidget().addHandler(new UploadTrackEvent.Handler() {
                 @Override
                 public void onUploadTack(UploadTrackEvent event) {
@@ -466,5 +470,9 @@ public class SettingsPanel extends Composite {
             return "maf";
         }
         return null;
+    }
+
+    public void setChromosome(String chr) {
+        this.chr = chr;
     }
 }

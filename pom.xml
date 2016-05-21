@@ -47,41 +47,27 @@
                 <groupId>com.github.timeu.gwt-libs.gwasviewer</groupId>
                 <artifactId>gwasviewer</artifactId>
                 <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.github.timeu.gwt-libs.gwasviewer</groupId>
-                <artifactId>gwasviewer</artifactId>
-                <version>${project.version}</version>
                 <type>gwt-lib</type>
             </dependency>
             <dependency>
                 <groupId>com.github.timeu.gwt-libs.geneviewer</groupId>
                 <artifactId>geneviewer</artifactId>
                 <version>${geneviewer.version}</version>
-                <type>gwt-lib</type>
             </dependency>
             <dependency>
                 <groupId>com.github.timeu.gwt-libs.dygraphs-gwt</groupId>
                 <artifactId>dygraphs-gwt</artifactId>
                 <version>${dygraphsgwt.version}</version>
-                <type>gwt-lib</type>
             </dependency>
             <dependency>
                 <groupId>com.github.timeu.gwt-libs.ldviewer</groupId>
                 <artifactId>ldviewer</artifactId>
                 <version>${ldviewer.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.github.timeu.gwt-libs.ldviewer</groupId>
-                <artifactId>ldviewer</artifactId>
-                <version>${ldviewer.version}</version>
-                <type>gwt-lib</type>
             </dependency>
             <dependency>
                 <groupId>com.googlecode.gwt-charts</groupId>
                 <artifactId>gwt-charts</artifactId>
                 <version>${gwt-charts.version}</version>
-                <type>gwt-lib</type>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>
@@ -200,7 +186,7 @@
     </modules>
     <scm>
         <url>https://timeu@github.com/timeu/gwasviewer</url>
-        <connection>scm:git@github.com:timeu/gwasviewer.git</connection>
+        <connection>scm:git:git@github.com:timeu/gwasviewer.git</connection>
         <developerConnection>scm:git@github.com:timeu/gwasviewer.git</developerConnection>
         <tag>HEAD</tag>
     </scm>

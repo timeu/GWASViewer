@@ -6,7 +6,6 @@
     xmlns:gwas="urn:import:com.github.timeu.gwtlibs.gwasviewer.client">
 	<ui:style>
         .genomeView {
-            margin: 0px 5px 0px 0px;
             margin-left:26px;
         }
 

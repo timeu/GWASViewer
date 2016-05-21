@@ -16,6 +16,26 @@ public class DisplayFeature {
         this.start = start;
         this.end = end;
         this.color = color;
+    }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        DisplayFeature that = (DisplayFeature) o;
+
+        if (start != that.start) return false;
+        if (end != that.end) return false;
+        return name != null ? name.equals(that.name) : that.name == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = name != null ? name.hashCode() : 0;
+        result = 31 * result + start;
+        result = 31 * result + end;
+        return result;
     }
 }

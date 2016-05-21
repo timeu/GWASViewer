@@ -12,6 +12,7 @@
 .settingsButton {
 	gwt-sprite: 'settings_icon';
 	opacity:0.55;
+	box-sizing: content-box;
 }
 .settingsContent {
 	font-family: arial,sans-serif;
