@@ -52,6 +52,7 @@ import com.github.timeu.gwtlibs.ldviewer.client.event.UnhighlightLDEvent;
 import com.google.gwt.canvas.dom.client.Context2d;
 import com.google.gwt.core.client.JsArrayMixed;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
 import com.google.gwt.core.client.GWT;
@@ -78,19 +79,18 @@ import com.googlecode.gwt.charts.client.Selection;
 public class GWASViewer extends Composite implements RequiresResize {
 
 	private static Binder uiBinder = GWT.create(Binder.class);
-    //private List<Track> tracks = new ArrayList<>();
-
     interface Binder extends UiBinder<Widget, GWASViewer> {	}
 
     private static Logger logger = Logger.getLogger(GWASViewer.class.getCanonicalName());
 
-
 	@UiField SimplePanel scatterChartContainer;
+
 
     @UiField SimplePanel geneViewerContainer;
 
-
     @UiField Label chromosomeLabel;
+
+
     @UiField GeneViewer geneViewer;
     @UiField LDViewer ldviewer;
     @UiField FlowPanel ldviewerContainer;
@@ -100,22 +100,22 @@ public class GWASViewer extends Composite implements RequiresResize {
     protected Dygraphs scatterChart;
     @UiField(provided=true) Resources mainRes;
     private DataView filteredView;
-
     private final ScheduledCommand layoutCmd = new ScheduledCommand() {
     	public void execute() {
     		layoutScheduled = false;
 		    forceLayout();
 		}
     };
+
     private boolean layoutScheduled = false;
-	protected double maxValue;
-
-
+    protected double maxValue;
     protected String[] color;
+
 
     protected String geneMarkerColor ="green";
 
     protected int pointSize =3;
+
     protected int highlightCircleSize = 4;
     protected int scatterChartHeight=200;
     protected DataTable dataTable;
@@ -123,10 +123,12 @@ public class GWASViewer extends Composite implements RequiresResize {
     protected double pvalThreshold = -1 ;
     // use instance because getSelection() does not work in onUnderlay event, because date_graph is not properly initialized
 	protected List<Integer> selections = new ArrayList<>();
-
     //GenomeView settings
 	protected Integer minZoomLevelForGenomeView = 1500000;
+
     protected boolean isGeneViewerLoaded = false;
+    //private List<Track> tracks = new ArrayList<>();
+    private String geneInfoUrl;
 
 
     //LDViewer settings
@@ -429,6 +431,10 @@ public class GWASViewer extends Composite implements RequiresResize {
                         @Override
                         public void onClickGene(ClickGeneEvent event) {
                             fireEvent(event);
+                            if (geneInfoUrl != null) {
+                                Window.open(geneInfoUrl.replace("{0}",event.getGene().name),"Gene Info","");
+                            }
+
                         }
                     });
 					/*if (minZoomLevelForGenomeView >= (viewEnd- viewStart) && (viewEnd - viewStart) > 0) {
@@ -779,7 +785,7 @@ public class GWASViewer extends Composite implements RequiresResize {
 	}
 
 	public void setGeneInfoUrl(String geneInfoUrl) {
-		//geneViewer.setGeneInfoUrl(geneInfoUrl);
+		this.geneInfoUrl = geneInfoUrl;
 	}
 
 
