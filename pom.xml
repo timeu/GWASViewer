@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.timeu.gwt-libs.gwasviewer</groupId>
     <artifactId>gwasviewer-parent</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
     <name>GWASViewer (Parent)</name>
     <packaging>pom</packaging>
     <description>A GWT based visualization for a Manhattan plots</description>
@@ -210,6 +210,6 @@
         <url>https://timeu@github.com/timeu/gwasviewer</url>
         <connection>scm:git:git@github.com:timeu/gwasviewer.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/timeu/gwasviewer.git</developerConnection>
-        <tag>v1.0.0</tag>
+        <tag>HEAD</tag>
     </scm>
 </project>
