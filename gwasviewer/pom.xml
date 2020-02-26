@@ -9,6 +9,7 @@
     <artifactId>gwasviewer</artifactId>
     <packaging>gwt-lib</packaging>
     <name>GWASViewer</name>
+    <description>A GWT based visualization for a Manhattan plots (Core Library)</description>
 
     <build>
         <plugins>
